@@ -7,7 +7,7 @@ PortGroup           github 1.0
 
 github.setup        opencv opencv 4.3.0
 name                opencv4
-revision            0
+revision            1
 categories          graphics science
 platforms           darwin
 license             BSD
@@ -77,6 +77,20 @@ depends_lib-append  port:zlib \
                     port:ade
 
 configure.args-append \
+                    -DOPENCV_BIN_INSTALL_PATH=${prefix}/libexec/opencv4/bin \
+                    -DOPENCV_SBIN_INSTALL_PATH=${prefix}/libexec/opencv4/sbin \
+                    -DOPENCV_TEST_INSTALL_PATH=${prefix}/libexec/opencv4/test \
+                    -DOPENCV_SAMPLES_BIN_INSTALL_PATH=${prefix}/libexec/opencv4/samples \
+                    -DOPENCV_SETUPVARS_INSTALL_PATH=${prefix}/libexec/opencv4/scripts \
+                    -DCMAKE_BINARY_DIR=${prefix}/libexec/opencv4/bin \
+                    -DCMAKE_INSTALL_BINDIR=libexec/opencv4/bin \
+                    -DCMAKE_INSTALL_SBINDIR=libexec/opencv4/sbin \
+                    -DCMAKE_INSTALL_LIBEXECDIR=libexec/opencv4 \
+                    -DCMAKE_INSTALL_LIBDIR=lib/opencv4 \
+                    -DCMAKE_INSTALL_NAME_DIR=${prefix}/lib/opencv4 \
+                    -DCMAKE_INSTALL_RPATH=${prefix}/lib/opencv4
+
+configure.args-append \
                     -DCMAKE_RULE_MESSAGES:BOOL=OFF -DCMAKE_VERBOSE_MAKEFILE:BOOL=ON \
                     \
                     -DWITH_ADE:BOOL=ON \
@@ -84,7 +98,7 @@ configure.args-append \
                     \
                     -DHAVE_CXX11:BOOL=ON \
                     -DENABLE_PIC:BOOL=OFF \
-                    -DBUILD_SHARED_LIBS:BOOL=OFF \
+                    -DBUILD_SHARED_LIBS:BOOL=ON \
                     -DBUILD_opencv_apps:BOOL=ON \
                     -DBUILD_DOCS:BOOL=OFF \
                     -DBUILD_EXAMPLES:BOOL=OFF \
