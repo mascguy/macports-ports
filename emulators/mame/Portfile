@@ -40,19 +40,20 @@ github.tarball_from archive
 # Patches and Checksums
 #------------------------------------------------------------------------------
 
-# Patch 'language-portuguese_brazil' is only applicable to release 0.226.
-# Fix was submitted, and merged, by Mame maintainers... and will be part of
-# official Mame releases from 0.227 onward. Net-Net, this particular patch can
-# be removed starting with 0.227. Tracked by Mame issue:
+# Patch 'language-portuguese_brazil' applies to release 0.226; fixes
+# errors during translation build phase.
+# Fix submitted, and merged, by Mame maintainers; will be part of Mame
+# releases from 0.227 onward. Tracked by Mame issue:
 # https://github.com/mamedev/mame/issues/7510
 #
-# Patch 'src-posixfile-build-error' applies to release 0.226. It fixes a
-# compilation error on older MacOS/Xcode releases, particularly 10.8.
+# Patch 'src-posixfile-build-error' applies to release 0.226; fixes
+# compilation errors for MacOS 10.8 and Xcode 5.x.
+# Fix submitted, and merged, by Mame maintainers; will be part of Mame
+# releases from 0.227 onward. Tracked by Mame issue:
+# https://github.com/mamedev/mame/issues/7536
 #
-# Conversely, patch 'scripts-genie-compile-warnings' is not specific to any
-# particular Mame release. Indeed, it is technically not required at all.
-# However, it eliminates spurious warnings due to use of deprecated types
-# and/or calls... and reduces pollution in the build log.
+# Patch 'scripts-genie-compile-warnings' applies to all releases; greatly
+# reduces compilation warnings.
 
 patchfiles          mame-patch-0226-language-portuguese_brazil.diff \
                     mame-patch-0226-src-posixfile-build-error.diff \
@@ -108,7 +109,6 @@ set g_mame_build_targets_dist_list \
 # Note: Dynamic values populated in phase 'pre-build'.
 set g_mame_build_args_dist_list \
     [list \
-        "--file=dist.mak" \
     ]
 
 #------------------------------------------------------------------------------
@@ -141,6 +141,7 @@ depends_run-append  \
 # Build Options
 #------------------------------------------------------------------------------
 
+# Note: ARM64 build support pending
 #supported_archs     x86_64 arm64
 supported_archs     x86_64
 
@@ -227,6 +228,7 @@ proc mame_arch_setup {p_arch_64} {
     return 0
 }
 
+# This must be run early, after 'g_mame_build_arch_64' set.
 mame_arch_setup ${g_mame_build_arch_64}
 
 #------------------------------------------------------------------------------
@@ -307,18 +309,20 @@ proc mame_variant_python_setup {p_ver_major p_ver_minor} {
 # Procs - High Level - Phase Support
 #------------------------------------------------------------------------------
 
-proc mame_build_run {p_work_path p_target p_build_args_list} {
+proc mame_build_run {p_work_path p_makefile p_target p_build_args_list} {
     global build.cmd
     global build.jobs
     global build.pre_args
 
     ui_debug "mame_build_run: p_work_path: ${p_work_path}"
+    ui_debug "mame_build_run: p_makefile: ${p_makefile}"
     ui_debug "mame_build_run: p_target: ${p_target}"
     ui_debug "mame_build_run: p_build_args_list: ${p_build_args_list}"
 
     set build_cmd_line \
         "${build.cmd} \
             --jobs=${build.jobs} \
+            --file=${p_makefile} \
             [join ${build.pre_args}] \
             ${p_target} \
             [join ${p_build_args_list}]"
@@ -346,27 +350,21 @@ variant tools \
     mame_variant_tools_setup
 }
 
-variant python36 \
-        description {Use python 3.6 for build} \
-        conflicts python37 python38 python39 {
-    mame_variant_python_setup 3 6
-}
-
 variant python37 \
         description {Use python 3.7 for build} \
-        conflicts python36 python38 python39 {
+        conflicts python38 python39 {
     mame_variant_python_setup 3 7
 }
 
 variant python38 \
         description {Use python 3.8 for build} \
-        conflicts python36 python37 python39 {
+        conflicts python37 python39 {
     mame_variant_python_setup 3 8
 }
 
 variant python39 \
         description {Use python 3.9 for build} \
-        conflicts python36 python37 python38 {
+        conflicts python37 python38 {
     mame_variant_python_setup 3 9
 }
 
@@ -376,7 +374,7 @@ default_variants   +tools
 universal_variant   no
 
 # Ensure one python* variant is selected by default, if not specified by user
-if {![variant_isset python36] && ![variant_isset python37] && ![variant_isset python38] && ![variant_isset python39]} {
+if {![variant_isset python37] && ![variant_isset python38] && ![variant_isset python39]} {
     default_variants +python38
 }
 
@@ -428,6 +426,7 @@ build {
         ui_msg "Building documentation target: ${target}"
         mame_build_run \
             "${worksrcpath}/docs" \
+            "Makefile" \
             ${target} \
             ${g_mame_build_args_docs_list}
     }
@@ -437,6 +436,7 @@ build {
         ui_msg "Building main target: ${target}"
         mame_build_run \
             ${worksrcpath} \
+            "makefile" \
             ${target} \
             ${build.args}
     }
@@ -446,6 +446,7 @@ build {
         ui_msg "Building distribution target: ${target}"
         mame_build_run \
             ${worksrcpath} \
+            "dist.mak" \
             ${target} \
             ${g_mame_build_args_dist_list}
     }
@@ -456,37 +457,45 @@ build {
 destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
+    set mame_dir_create_list \
+        [list \
+            ${mame_target_dir} \
+            ${mame_target_dir}/cfg \
+            ${mame_target_dir}/cheat \
+            ${mame_target_dir}/comments \
+            ${mame_target_dir}/crsshair \
+            ${mame_target_dir}/diff \
+            ${mame_target_dir}/fonts \
+            ${mame_target_dir}/inp \
+            ${mame_target_dir}/nvram \
+            ${mame_target_dir}/software \
+            ${mame_target_dir}/snap \
+            ${mame_target_dir}/sta \
+            ${mame_share_dir} \
+        ]
+    set mame_copy_list \
+        [list \
+            ${worksrcpath}/${executable} \
+            ${worksrcpath}/ctrlr \
+            ${worksrcpath}/hash \
+            ${worksrcpath}/hlsl \
+            ${worksrcpath}/ini \
+            ${worksrcpath}/keymaps \
+            ${worksrcpath}/language \
+            ${worksrcpath}/plugins \
+            ${worksrcpath}/roms \
+            ${worksrcpath}/samples \
+            ${worksrcpath}/scripts \
+            ${worksrcpath}/docs/build/man \
+        ]
 
-    # Main
-    xinstall -d ${mame_target_dir}
-    copy ${worksrcpath}/${executable} ${mame_target_dir}
-    copy ${worksrcpath}/artwork ${mame_target_dir}
-    copy ${worksrcpath}/bgfx ${mame_target_dir}
-    xinstall -d ${mame_target_dir}/cfg
-    xinstall -d ${mame_target_dir}/cheat
-    xinstall -d ${mame_target_dir}/comments
-    xinstall -d ${mame_target_dir}/crsshair
-    copy ${worksrcpath}/ctrlr ${mame_target_dir}
-    xinstall -d ${mame_target_dir}/diff
-    xinstall -d ${mame_target_dir}/fonts
-    copy ${worksrcpath}/hash ${mame_target_dir}
-    copy ${worksrcpath}/hlsl ${mame_target_dir}
-    copy ${worksrcpath}/ini ${mame_target_dir}
-    xinstall -d ${mame_target_dir}/inp
-    copy ${worksrcpath}/keymaps ${mame_target_dir}
-    copy ${worksrcpath}/language ${mame_target_dir}
-    xinstall -d ${mame_target_dir}/nvram
-    copy ${worksrcpath}/plugins ${mame_target_dir}
-    copy ${worksrcpath}/roms ${mame_target_dir}
-    copy ${worksrcpath}/samples ${mame_target_dir}
-    copy ${worksrcpath}/scripts ${mame_target_dir}
-    xinstall -d ${mame_target_dir}/software
-    xinstall -d ${mame_target_dir}/snap
-    xinstall -d ${mame_target_dir}/sta
-
-    # Docs
-    xinstall -d ${mame_share_dir}
-    copy ${worksrcpath}/docs/build/man ${mame_share_dir}
+    foreach tgt ${mame_dir_create_list} {
+        xinstall -d ${tgt}
+    }
+    foreach tgt ${mame_copy_list} {
+        copy ${tgt} ${mame_target_dir}
+    }
+    unset tgt
 
     # Tools
     if {[variant_isset tools]} {
