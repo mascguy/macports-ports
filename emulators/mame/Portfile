@@ -206,7 +206,7 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     USE_SYSTEM_LIB_ZLIB=1
 
 # Clear 'build.target', to avoid contaminating 'build.pre_args'.
-# Note that we cannot rely on default build logic, as multiple makefiles are involved.
+# We cannot rely on default build logic, as multiple makefiles are involved.
 build.target
 
 # Ensure errors are grouped with their command invokation
