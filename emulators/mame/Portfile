@@ -171,6 +171,7 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     LDOPTS="-lSDL2" \
                     OPTIMIZE=2 \
                     NOWERROR=1 \
+                    TESTS=1 \
                     VERBOSE=1 \
                     USE_LIBSDL=1 \
                     USE_SYSTEM_LIB_ASIO=1 \
@@ -199,9 +200,9 @@ if {$build_arch in [list arm64 x86_64 ppc64]} {
 #------------------------------------------------------------------------------
 # Test Support
 #
-# Note: At the time of this writing (12/2020), Mame's test suite is quite
-# limited. And it does not require a build. But it's still worthwhile, to
-# provide some basic sanity checks.
+# Note: As of release 0.226, Mame's test suite is quite limited. And it
+# doesn't require a build. But it's still worthwhile, to provide some basic
+# sanity checks.
 #------------------------------------------------------------------------------
 
 test.run      yes
