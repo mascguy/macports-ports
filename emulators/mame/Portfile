@@ -413,7 +413,7 @@ if {![variant_isset python37] && ![variant_isset python38] && ![variant_isset py
 #------------------------------------------------------------------------------
 
 pre-build {
-    # Main build - update build args
+    # Main - update build args
     # Note: These need to be set first, as they're also used below
     set py_bin [dict get ${g_mame_python_info_dict} py_bin]
     build.args-append \
@@ -435,7 +435,7 @@ pre-build {
     unset build_args_docs
     unset sphinx_bin
 
-    # BGFX build - set build args
+    # BGFX - update build args
     # Combine the args for main build, with those that are BGFX-specific
     set g_mame_build_args_bgfx_list \
         [concat \
@@ -443,7 +443,7 @@ pre-build {
             ${g_mame_build_args_bgfx_list} \
         ]
 
-    # Distribution build - update build args
+    # Distribution - update build args
     # Combine the args for main build, with those that are dist-specific
     set g_mame_build_args_dist_list \
         [concat \
@@ -451,7 +451,7 @@ pre-build {
             ${g_mame_build_args_dist_list} \
         ]
 
-    # BGFX build - add target, based on whether debug requested
+    # BGFX - add appropriate build target, based on whether debug requested
     if {[variant_isset debug]} {
         set bgfx_target "osx-debug64"
     } else {
