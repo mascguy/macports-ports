@@ -490,6 +490,7 @@ destroot {
             ${worksrcpath}/docs/build/man \
         ]
 
+    # Create directories, and copy content
     foreach tgt ${mame_dir_create_list} {
         xinstall -d ${tgt}
     }
