@@ -153,8 +153,8 @@ depends_run-append  \
 #------------------------------------------------------------------------------
 
 # Note: ARM64 support pending
-#supported_archs     x86_64 arm64
-supported_archs     x86_64
+#supported_archs     ppc ppc64 x86_64 arm64
+supported_archs     ppc ppc64 x86_64
 
 use_parallel_build  yes
 use_configure       no
