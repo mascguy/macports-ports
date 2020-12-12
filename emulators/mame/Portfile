@@ -169,9 +169,11 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     CFLAGS="-isystem${prefix}/include" \
                     LDOPTS="-L${prefix}/lib" \
                     LDOPTS="-lSDL2" \
+                    PRECOMPILE=1 \
+                    TESTS=1 \
+                    DEBUG=0 \
                     OPTIMIZE=2 \
                     NOWERROR=1 \
-                    TESTS=1 \
                     VERBOSE=1 \
                     USE_LIBSDL=1 \
                     USE_SYSTEM_LIB_ASIO=1 \
@@ -278,7 +280,8 @@ proc mame_python_add_deps {} {
 #------------------------------------------------------------------------------
 
 proc mame_variant_debug_setup {} {
-    build.args-append \
+    build.args-replace \
+        "DEBUG=0" \
         "DEBUG=1"
 
     # Disable optimization, to improve debuggability
