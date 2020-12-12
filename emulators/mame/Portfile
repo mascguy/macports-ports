@@ -98,7 +98,7 @@ set g_mame_build_targets_bgfx_list \
 # Note: Dynamic values populated in phase 'pre-build'.
 set g_mame_build_args_bgfx_list \
     [list \
-        "--debug" \
+        "--trace" \
     ]
 
 # Main build targets.
