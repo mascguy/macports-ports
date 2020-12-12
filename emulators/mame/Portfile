@@ -65,7 +65,10 @@ checksums           rmd160  b9e4ae321b7673790d374c63bbe966d1502d6738 \
 #------------------------------------------------------------------------------
 
 # Whether we're building a 64-bit binary
-set g_mame_build_arch_64    0
+set g_mame_build_arch_64       0
+
+# Whether to build the BGFX components
+set g_mame_build_bgfx_enabled  0
 
 # Python version info, populated by python* variants.
 set g_mame_python_info_dict \
@@ -493,14 +496,18 @@ build {
             ${g_mame_build_args_docs_list}
     }
 
-    # BGFX build; iterate over targets
-    foreach target ${g_mame_build_targets_bgfx_list} {
-        ui_msg "Building bgfx target: ${target}"
-        mame_build_run \
-            "${worksrcpath}/3rdparty/bgfx" \
-            "makefile" \
-            ${target} \
-            ${g_mame_build_args_bgfx_list}
+    if {${g_mame_build_bgfx_enabled}} {
+        # BGFX build; iterate over targets
+        foreach target ${g_mame_build_targets_bgfx_list} {
+            ui_msg "Building bgfx target: ${target}"
+            mame_build_run \
+                "${worksrcpath}/3rdparty/bgfx" \
+                "makefile" \
+                ${target} \
+                ${g_mame_build_args_bgfx_list}
+        }
+    } else {
+        ui_debug "BGFX build disabled"
     }
 
     # Main build; iterate over targets
