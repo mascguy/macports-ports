@@ -477,6 +477,8 @@ destroot {
     set mame_copy_list \
         [list \
             ${worksrcpath}/${executable} \
+            ${worksrcpath}/artwork \
+            ${worksrcpath}/bgfx \
             ${worksrcpath}/ctrlr \
             ${worksrcpath}/hash \
             ${worksrcpath}/hlsl \
@@ -486,22 +488,10 @@ destroot {
             ${worksrcpath}/plugins \
             ${worksrcpath}/roms \
             ${worksrcpath}/samples \
-            ${worksrcpath}/scripts \
             ${worksrcpath}/docs/build/man \
         ]
-
-    # Create directories, and copy content
-    foreach tgt ${mame_dir_create_list} {
-        xinstall -d ${tgt}
-    }
-    foreach tgt ${mame_copy_list} {
-        copy ${tgt} ${mame_target_dir}
-    }
-    unset tgt
-
-    # Tools
-    if {[variant_isset tools]} {
-        xinstall \
+    set mame_tools_list \
+        [list \
             ${worksrcpath}/aueffectutil \
             ${worksrcpath}/castool \
             ${worksrcpath}/chdman \
@@ -519,8 +509,21 @@ destroot {
             ${worksrcpath}/srcclean \
             ${worksrcpath}/testkeys \
             ${worksrcpath}/unidasm \
-            ${mame_target_dir}
+        ]
+
+    # Create directories, and copy content
+    foreach tgt ${mame_dir_create_list} {
+        xinstall -d ${tgt}
     }
+    foreach tgt ${mame_copy_list} {
+        copy ${tgt} ${mame_target_dir}
+    }
+    if {[variant_isset tools]} {
+        foreach tgt ${mame_tools_list} {
+            xinstall -d ${tgt} ${mame_target_dir}
+        }
+    }
+    unset tgt
 
     unset mame_share_dir
     unset mame_target_dir
