@@ -580,3 +580,4 @@ if {[variant_isset tools]} {
     Mame tools are available in path ${prefix}/libexec/mame
     }
 }
+
