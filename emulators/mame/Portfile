@@ -88,6 +88,18 @@ set g_mame_build_args_docs_list \
     [list \
     ]
 
+# BGFX build targets.
+# Note: Values populated in phase 'pre-build', as they differ based on variants.
+set g_mame_build_targets_bgfx_list \
+    [list \
+    ]
+
+# BGFX build args.
+# Note: Dynamic values populated in phase 'pre-build'.
+set g_mame_build_args_bgfx_list \
+    [list \
+    ]
+
 # Main build targets.
 # Note: Target 'all' must be run before 'translation', or latter will fail.
 set g_mame_build_targets_main_list \
@@ -386,11 +398,15 @@ if {![variant_isset python37] && ![variant_isset python38] && ![variant_isset py
 #------------------------------------------------------------------------------
 
 pre-build {
-    # Architecture setup - 64-bit vs 32-bit
+    # Main build - update build args
+    # Note: These need to be set first, as they're also used below
+    set py_bin [dict get ${g_mame_python_info_dict} py_bin]
     build.args-append \
-        PTR64=${g_mame_build_arch_64}
+        "PTR64=${g_mame_build_arch_64}" \
+        "PYTHON_EXECUTABLE=${py_bin}"
+    unset py_bin
 
-    # Update build args for documentation build
+    # Documentation - update build args
     set sphinx_bin [dict get ${g_mame_python_info_dict} sphinx_bin]
     set build_args_docs \
         [list \
@@ -404,13 +420,15 @@ pre-build {
     unset build_args_docs
     unset sphinx_bin
 
-    # Update build args for main build
-    set py_bin [dict get ${g_mame_python_info_dict} py_bin]
-    build.args-append \
-        "PYTHON_EXECUTABLE=${py_bin}"
-    unset py_bin
+    # BGFX build - set build args
+    # Combine the args for main build, with those that are BGFX-specific
+    set g_mame_build_args_bgfx_list \
+        [concat \
+            ${build.args} \
+            ${g_mame_build_args_bgfx_list} \
+        ]
 
-    # Update build args for distribution build
+    # Distribution build - update build args
     # Combine the args for main build, with those that are dist-specific
     set g_mame_build_args_dist_list \
         [concat \
@@ -418,7 +436,27 @@ pre-build {
             ${g_mame_build_args_dist_list} \
         ]
 
+    # BGFX build - add target, based on whether debug requested
+    if {[variant_isset debug]} {
+        set bgfx_target "osx-debug64"
+    } else {
+        set bgfx_target "osx-release64"
+    }
+    set build_targets_bgfx \
+        [list \
+            ${bgfx_target} \
+        ]
+    set g_mame_build_targets_bgfx_list \
+        [concat \
+            ${g_mame_build_targets_bgfx_list} \
+            ${build_targets_bgfx} \
+        ]
+    unset build_targets_bgfx
+    unset bgfx_target
+
     ui_debug "Phase pre-build: g_mame_build_args_docs_list: ${g_mame_build_args_docs_list}"
+    ui_debug "Phase pre-build: g_mame_build_args_bgfx_list: ${g_mame_build_args_bgfx_list}"
+    ui_debug "Phase pre-build: g_mame_build_targets_bgfx_list: ${g_mame_build_targets_bgfx_list}"
     ui_debug "Phase pre-build: g_mame_build_args_dist_list: ${g_mame_build_args_dist_list}"
 }
 
@@ -432,6 +470,16 @@ build {
             "Makefile" \
             ${target} \
             ${g_mame_build_args_docs_list}
+    }
+
+    # BGFX build; iterate over targets
+    foreach target ${g_mame_build_targets_bgfx_list} {
+        ui_msg "Building BGFX target: ${target}"
+        mame_build_run \
+            "${worksrcpath}/3rdparty/bgfx" \
+            "makefile" \
+            ${target} \
+            ${g_mame_build_args_bgfx_list}
     }
 
     # Main build; iterate over targets
