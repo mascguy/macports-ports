@@ -160,7 +160,7 @@ use_parallel_build  yes
 use_configure       no
 configure.ccache    yes
 
-build.cmd ${prefix}/bin/gmake
+build.cmd           ${prefix}/bin/gmake
 
 # https://github.com/mamedev/mame/issues/6004
 compiler.blacklist  {clang < 1000}
