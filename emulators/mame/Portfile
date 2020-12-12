@@ -187,7 +187,7 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     LDOPTS="-lSDL2" \
                     PRECOMPILE=1 \
                     TESTS=0 \
-                    BENCHMARKS=1 \
+                    BENCHMARKS=0 \
                     DEBUG=0 \
                     OPTIMIZE=2 \
                     NOWERROR=1 \
@@ -204,6 +204,13 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     USE_SYSTEM_LIB_SQLITE3=1 \
                     USE_SYSTEM_LIB_UTF8PROC=1 \
                     USE_SYSTEM_LIB_ZLIB=1
+
+build.post_args
+
+if {[tbool configure.ccache]} {
+    build.post_args-append \
+        "CCACHE=ccache"
+}
 
 # Clear 'build.target', to avoid contaminating 'build.pre_args'.
 # Note that we cannot rely on default build logic, as multiple makefiles are involved.
