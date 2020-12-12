@@ -3,13 +3,10 @@
 #------------------------------------------------------------------------------
 # Portfile Style Notes
 #
-# * For cases where local variables are created within phases, they are
-#   explicitly unset when no longer being used. This is a conscious choice,
-#   and helps avoid any possible clashes elsewhere.
-# * To aid readability, intermediate variables, lists, etc, are often
-#   employed. While that makes the portfile longer, it also assists when
-#   trying to understand what is being done... aiding in diagnosing and
-#   debugging issues. Again, this is a conscious choice.
+# * When local variables are created within phases, they are unset when
+#   finished. This prevents possible clashes elsewhere.
+# * Intermediate variables, lists, etc, are often employed. While more
+#   verbose, it aids readability.
 #------------------------------------------------------------------------------
 
 PortSystem          1.0
