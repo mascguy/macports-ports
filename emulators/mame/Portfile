@@ -141,7 +141,7 @@ depends_run-append  \
 # Build Options
 #------------------------------------------------------------------------------
 
-# Note: ARM64 build support pending
+# Note: ARM64 support pending
 #supported_archs     x86_64 arm64
 supported_archs     x86_64
 
@@ -192,6 +192,7 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
 # Note that we cannot rely on default build logic, as multiple makefiles are involved.
 build.target
 
+# Ensure 'g_mame_build_arch_64' set early, as it's needed later
 if {$build_arch in [list arm64 x86_64 ppc64]} {
     set g_mame_build_arch_64  1
 } else {
