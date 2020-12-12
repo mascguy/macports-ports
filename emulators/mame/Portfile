@@ -478,7 +478,7 @@ build {
 
     # BGFX build; iterate over targets
     foreach target ${g_mame_build_targets_bgfx_list} {
-        ui_msg "Building BGFX target: ${target}"
+        ui_msg "Building bgfx target: ${target}"
         mame_build_run \
             "${worksrcpath}/3rdparty/bgfx" \
             "makefile" \
