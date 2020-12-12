@@ -18,7 +18,7 @@ PortGroup           github 1.0
 PortGroup           compiler_blacklist_versions 1.0
 
 github.setup        mamedev mame 0226 mame
-revision            1
+revision            2
 
 version             [string index ${github.version} 0].[string range ${github.version} 1 end]
 categories          emulators
@@ -66,6 +66,9 @@ checksums           rmd160  b9e4ae321b7673790d374c63bbe966d1502d6738 \
 # Port-Specific Globals
 #------------------------------------------------------------------------------
 
+# Whether we're building a 64-bit binary
+set g_mame_build_arch_64    0
+
 # Python version info, populated by python* variants.
 set g_mame_python_info_dict \
     [dict create \
@@ -93,6 +96,19 @@ set g_mame_build_targets_main_list \
     [list \
         "all" \
         "translation" \
+    ]
+
+# Distribution build targets.
+set g_mame_build_targets_dist_list \
+    [list \
+        "all" \
+    ]
+
+# Distribution build args.
+# Note: Dynamic values populated in phase 'pre-build'.
+set g_mame_build_args_dist_list \
+    [list \
+        "--file=dist.mak" \
     ]
 
 #------------------------------------------------------------------------------
@@ -125,9 +141,12 @@ depends_run-append  \
 # Build Options
 #------------------------------------------------------------------------------
 
-use_parallel_build  yes
+#supported_archs     x86_64 arm64
+supported_archs     x86_64
 
+use_parallel_build  yes
 use_configure       no
+configure.ccache    yes
 
 # https://github.com/mamedev/mame/issues/6004
 compiler.blacklist  {clang < 1000}
@@ -144,7 +163,6 @@ compiler.cxx_standard   2014
 # Note: Compiler optimization level is controlled by makefile variable 'OPTIMIZE', below.
 configure.cxxflags-delete -O1 -O2 -O3 -Os
 
-# TODO: Disable debugging, via 'DEBUG=0'?
 build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     CC="${configure.cc}" \
                     CXX="${configure.cxx}" \
@@ -169,19 +187,15 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     USE_SYSTEM_LIB_UTF8PROC=1 \
                     USE_SYSTEM_LIB_ZLIB=1
 
-if {$build_arch in [list arm64 x86_64 ppc64]} {
-    build.args-append \
-        PTR64=1
-    set executable mame64
-} else {
-    build.args-append \
-        PTR64=0
-    set executable mame
-}
-
 # Clear 'build.target', to avoid contaminating 'build.pre_args'.
 # Note that we cannot rely on default build logic, as multiple makefiles are involved.
 build.target
+
+if {$build_arch in [list arm64 x86_64 ppc64]} {
+    set g_mame_build_arch_64  1
+} else {
+    set g_mame_build_arch_64  0
+}
 
 #------------------------------------------------------------------------------
 # Test Support
@@ -195,9 +209,28 @@ test.run      yes
 test.target   tests
 
 #------------------------------------------------------------------------------
-# Procs - Low Level
-#
-# Should only be called by High-Level procs!
+# Procs - Bootstrap
+#------------------------------------------------------------------------------
+
+proc mame_arch_setup {p_arch_64} {
+    global executable
+
+    # Architecture setup - 64-bit vs 32-bit
+    if {${p_arch_64}} {
+        set executable "mame64"
+    } else {
+        set executable "mame"
+    }
+
+    ui_debug "mame_arch_setup: executable: ${executable}"
+
+    return 0
+}
+
+mame_arch_setup ${g_mame_build_arch_64}
+
+#------------------------------------------------------------------------------
+# Procs - Low Level - Python Setup
 #------------------------------------------------------------------------------
 
 # Populate global Python info dictionary, for specified version
@@ -242,6 +275,18 @@ proc mame_python_add_deps {} {
 #------------------------------------------------------------------------------
 # Procs - High Level - Variant Support
 #------------------------------------------------------------------------------
+
+proc mame_variant_debug_setup {} {
+    build.args-append \
+        "DEBUG=1"
+
+    # Disable optimization, to improve debuggability
+    build.args-replace \
+        "OPTIMIZE=2" \
+        "OPTIMIZE=0"
+
+    return 0
+}
 
 proc mame_variant_tools_setup {} {
     build.args-append \
@@ -291,6 +336,11 @@ proc mame_build_run {p_work_path p_target p_build_args_list} {
 # Variants
 #------------------------------------------------------------------------------
 
+variant debug \
+        description {Enable debug support} {
+    mame_variant_debug_setup
+}
+
 variant tools \
         description {Compile and install the mame tools like chdman and others} {
     mame_variant_tools_setup
@@ -335,6 +385,10 @@ if {![variant_isset python36] && ![variant_isset python37] && ![variant_isset py
 #------------------------------------------------------------------------------
 
 pre-build {
+    # Architecture setup - 64-bit vs 32-bit
+    build.args-append \
+        PTR64=${g_mame_build_arch_64}
+
     # Update build args for documentation build
     set sphinx_bin [dict get ${g_mame_python_info_dict} sphinx_bin]
     set build_args_docs \
@@ -355,10 +409,19 @@ pre-build {
         "PYTHON_EXECUTABLE=${py_bin}"
     unset py_bin
 
+    # Update build args for distribution build
+    # Combine the args for main build, with those that are dist-specific
+    set g_mame_build_args_dist_list \
+        [concat \
+            ${build.args} \
+            ${g_mame_build_args_dist_list} \
+        ]
+
     ui_debug "Phase pre-build: g_mame_build_args_docs_list: ${g_mame_build_args_docs_list}"
+    ui_debug "Phase pre-build: g_mame_build_args_dist_list: ${g_mame_build_args_dist_list}"
 }
 
-# Override the standard build phase, to include both documentation and code
+# Override the standard build phase, to work with separate makefiles and targets
 build {
     # Documentation build; iterate over targets
     foreach target ${g_mame_build_targets_docs_list} {
@@ -378,6 +441,15 @@ build {
             ${build.args}
     }
 
+    # Distribution build; iterate over targets
+    foreach target ${g_mame_build_targets_dist_list} {
+        ui_msg "Building distribution target: ${target}"
+        mame_build_run \
+            ${worksrcpath} \
+            ${target} \
+            ${g_mame_build_args_dist_list}
+    }
+
     unset target
 }
 
@@ -386,39 +458,39 @@ destroot {
     set mame_share_dir "${destroot}${prefix}/share/mame"
 
     # Main
-    xinstall -m 755 -d ${mame_target_dir}
+    xinstall -d ${mame_target_dir}
     copy ${worksrcpath}/${executable} ${mame_target_dir}
     copy ${worksrcpath}/artwork ${mame_target_dir}
     copy ${worksrcpath}/bgfx ${mame_target_dir}
-    xinstall -m 755 -d ${mame_target_dir}/cfg
-    xinstall -m 755 -d ${mame_target_dir}/cheat
-    xinstall -m 755 -d ${mame_target_dir}/comments
-    xinstall -m 755 -d ${mame_target_dir}/crsshair
+    xinstall -d ${mame_target_dir}/cfg
+    xinstall -d ${mame_target_dir}/cheat
+    xinstall -d ${mame_target_dir}/comments
+    xinstall -d ${mame_target_dir}/crsshair
     copy ${worksrcpath}/ctrlr ${mame_target_dir}
-    xinstall -m 755 -d ${mame_target_dir}/diff
-    xinstall -m 755 -d ${mame_target_dir}/fonts
+    xinstall -d ${mame_target_dir}/diff
+    xinstall -d ${mame_target_dir}/fonts
     copy ${worksrcpath}/hash ${mame_target_dir}
     copy ${worksrcpath}/hlsl ${mame_target_dir}
     copy ${worksrcpath}/ini ${mame_target_dir}
-    xinstall -m 755 -d ${mame_target_dir}/inp
+    xinstall -d ${mame_target_dir}/inp
     copy ${worksrcpath}/keymaps ${mame_target_dir}
     copy ${worksrcpath}/language ${mame_target_dir}
-    xinstall -m 755 -d ${mame_target_dir}/nvram
+    xinstall -d ${mame_target_dir}/nvram
     copy ${worksrcpath}/plugins ${mame_target_dir}
     copy ${worksrcpath}/roms ${mame_target_dir}
     copy ${worksrcpath}/samples ${mame_target_dir}
     copy ${worksrcpath}/scripts ${mame_target_dir}
-    xinstall -m 755 -d ${mame_target_dir}/software
-    xinstall -m 755 -d ${mame_target_dir}/snap
-    xinstall -m 755 -d ${mame_target_dir}/sta
+    xinstall -d ${mame_target_dir}/software
+    xinstall -d ${mame_target_dir}/snap
+    xinstall -d ${mame_target_dir}/sta
 
     # Docs
-    xinstall -m 755 -d ${mame_share_dir}
+    xinstall -d ${mame_share_dir}
     copy ${worksrcpath}/docs/build/man ${mame_share_dir}
 
     # Tools
     if {[variant_isset tools]} {
-        xinstall -m 755 \
+        xinstall \
             ${worksrcpath}/aueffectutil \
             ${worksrcpath}/castool \
             ${worksrcpath}/chdman \
@@ -462,7 +534,7 @@ post-destroot {
         ${mame_launch_link}
 
     # Create soft link to man page
-    xinstall -d -m 755 ${mp_man_dest_dir}
+    xinstall -d ${mp_man_dest_dir}
     ln -s "${prefix}/share/mame/man/MAME.1" \
         "${mp_man_dest_dir}/mame.1"
 
