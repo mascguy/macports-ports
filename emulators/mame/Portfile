@@ -205,16 +205,20 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     USE_SYSTEM_LIB_UTF8PROC=1 \
                     USE_SYSTEM_LIB_ZLIB=1
 
+# Clear 'build.target', to avoid contaminating 'build.pre_args'.
+# Note that we cannot rely on default build logic, as multiple makefiles are involved.
+build.target
+
+# Ensure errors are grouped with their command invokation
+build.pre_args-append \
+    "--output-sync=line"
+
 build.post_args
 
 if {[tbool configure.ccache]} {
     build.post_args-append \
         "CCACHE=ccache"
 }
-
-# Clear 'build.target', to avoid contaminating 'build.pre_args'.
-# Note that we cannot rely on default build logic, as multiple makefiles are involved.
-build.target
 
 # Ensure 'g_mame_build_arch_64' set early, as it's needed later
 if {$build_arch in [list arm64 x86_64 ppc64]} {
