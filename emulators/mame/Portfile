@@ -210,8 +210,8 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
 build.target
 
 # Ensure errors are grouped with their command invokation
-build.pre_args-append \
-    "--output-sync=line"
+#build.pre_args-append \
+#    "--output-sync=line"
 
 build.post_args
 
