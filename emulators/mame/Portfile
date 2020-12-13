@@ -230,6 +230,15 @@ if {$build_arch in [list arm64 x86_64 ppc64]} {
     set g_mame_build_arch_64  0
 }
 
+# Optional command-line override, which toggles BGFX build.
+# Provides easy route to testing, without local portfile modification.
+if {[info exists mame.override.build.bgfx]} {
+    ui_msg "mame.override.build.bgfx specified: ${mame.override.build.bgfx}"
+
+    set g_mame_build_bgfx_enabled \
+        [string is true ${mame.override.build.bgfx}]
+}
+
 #------------------------------------------------------------------------------
 # Test Support
 #
