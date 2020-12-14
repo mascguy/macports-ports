@@ -271,7 +271,7 @@ proc mame_arch_setup {p_arch_64} {
     }
 
     # Remember to append a 'd' suffix for debug builds
-    # Note: Mame Tools executables have no suffix for debug
+    # Note: Mame Tools executables have no such suffix
     if {[variant_isset debug]} {
         set executable "${executable}d"
     }
@@ -476,6 +476,7 @@ pre-build {
         ]
 
     # BGFX - add appropriate build target, based on whether debug requested
+    # Note: BGFX doesn't support a 32-bit build
     if {[variant_isset debug]} {
         set bgfx_target "osx-debug64"
     } else {
@@ -511,8 +512,8 @@ build {
             ${g_mame_build_args_docs_list}
     }
 
+    # BGFX build; iterate over targets, if enabled
     if {${g_mame_build_bgfx_enabled}} {
-        # BGFX build; iterate over targets
         foreach target ${g_mame_build_targets_bgfx_list} {
             ui_msg "Building bgfx target: ${target}"
             mame_build_run \
@@ -551,6 +552,7 @@ build {
 destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
+
     set mame_dir_create_list \
         [list \
             ${mame_target_dir} \
@@ -618,6 +620,9 @@ destroot {
     }
     unset tgt
 
+    unset mame_tools_list
+    unset mame_copy_list
+    unset mame_dir_create_list
     unset mame_share_dir
     unset mame_target_dir
 }
