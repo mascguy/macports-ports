@@ -4,7 +4,7 @@
 # Portfile Style Notes
 #
 # * When local variables are created within phases, they are unset when
-#   finished. This prevents possible clashes elsewhere.
+#   finished. This prevents clashes elsewhere.
 # * Intermediate variables, lists, etc, are often employed. While more
 #   verbose, it aids readability.
 #------------------------------------------------------------------------------
@@ -19,7 +19,8 @@ revision            2
 
 version             [string index ${github.version} 0].[string range ${github.version} 1 end]
 categories          emulators
-maintainers         {@mascguy} openmaintainer
+maintainers         {@mascguy} \
+                    openmaintainer
 platforms           darwin
 license             GPL-2+
 homepage            https://www.mamedev.org
@@ -656,6 +657,9 @@ destroot {
     }
     unset tgt
 
+    unset man_page_delete
+    unset mame_release_dir
+
     unset mame_tools_list
     unset mame_copy_list
     unset mame_dir_create_list
@@ -681,10 +685,23 @@ post-destroot {
     ln -s "${prefix}/libexec/mame/mame.sh" \
         ${mame_launch_link}
 
-    # Create soft link to man page
+    # Create soft link to man pages
+    set man_page_files \
+        [glob -nocomplain \
+            -directory "${destroot}${prefix}/share/mame/docs/man" \
+            *.1]
+    ui_debug "Phase post-destroot: man_page_files: ${man_page_files}"
+
     xinstall -d ${mp_man_dest_dir}
-    ln -s "${prefix}/share/mame/man/MAME.1" \
-        "${mp_man_dest_dir}/mame.1"
+    foreach f ${man_page_files} {
+        ui_debug "Phase post-destroot: man pages: soft linking to: ${f}"
+        set f_name [file tail ${f}]
+        ln -s "${prefix}/share/mame/docs/man/${f_name}" \
+            "${mp_man_dest_dir}/${f_name}"
+    }
+    unset f
+
+    unset man_page_files
 
     unset mame_launch_link
     unset mame_launch_script
