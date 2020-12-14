@@ -630,18 +630,17 @@ destroot {
             [expr { [variant_isset debug] ? "Debug" : "Release" } ] \
             "mame" \
         ]
-
     ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
-
-    copy "${worksrcpath}/docs/build/man/MAME.1" \
-        "${mame_release_dir}/docs/man/mame.1"
 
     set man_page_delete \
         [glob -nocomplain -type f \
             -directory "${mame_release_dir}/docs/man" \
             *.6]
-
     ui_debug "Phase dest-root: man_page_delete: ${man_page_delete}"
+
+    # Copy in generated man page, joining pre-generated files for Tools
+    copy "${worksrcpath}/docs/build/man/MAME.1" \
+        "${mame_release_dir}/docs/man/mame.1"
 
     # Create directories, and copy content
     foreach tgt ${mame_dir_create_list} {
@@ -685,7 +684,7 @@ post-destroot {
     ln -s "${prefix}/libexec/mame/mame.sh" \
         ${mame_launch_link}
 
-    # Create soft link to man pages
+    # Create soft links to man pages
     set man_page_files \
         [glob -nocomplain \
             -directory "${destroot}${prefix}/share/mame/docs/man" \
