@@ -568,6 +568,17 @@ destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
 
+    # Generate release dir name, based on build options
+    # Format: build/release/[x64|x32]/[Debug|Release]/mame
+    set mame_release_dir \
+        [file join \
+            "${worksrcpath}/build/release" \
+            [expr { ${g_mame_build_arch_64} ? "x64" : "x32" } ] \
+            [expr { [variant_isset debug] ? "Debug" : "Release" } ] \
+            "mame" \
+        ]
+    ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
+
     set mame_dir_create_list \
         [list \
             ${mame_target_dir} \
@@ -620,17 +631,6 @@ destroot {
             ${worksrcpath}/testkeys \
             ${worksrcpath}/unidasm \
         ]
-
-    # Generate release dir name, based on build options
-    # Format: build/release/[x64|x32]/[Debug|Release]/mame
-    set mame_release_dir \
-        [file join \
-            "${worksrcpath}/build/release" \
-            [expr { ${g_mame_build_arch_64} ? "x64" : "x32" } ] \
-            [expr { [variant_isset debug] ? "Debug" : "Release" } ] \
-            "mame" \
-        ]
-    ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
 
     # Remove section 6 man pages, which aren't helpful
     set man_page_delete \
