@@ -632,11 +632,16 @@ destroot {
         ]
     ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
 
+    # Remove section 6 man pages, which aren't helpful
     set man_page_delete \
         [glob -nocomplain -type f \
             -directory "${mame_release_dir}/docs/man" \
             *.6]
     ui_debug "Phase dest-root: man_page_delete: ${man_page_delete}"
+    foreach tgt ${man_page_delete} {
+        ui_debug "Phase dest-root: deleting man page: ${tgt}"
+#        delete ${tgt}
+    }
 
     # Copy in generated man page, joining pre-generated files for Tools
     copy "${worksrcpath}/docs/build/man/MAME.1" \
@@ -654,6 +659,7 @@ destroot {
             xinstall ${tgt} ${mame_target_dir}
         }
     }
+
     unset tgt
 
     unset man_page_delete
