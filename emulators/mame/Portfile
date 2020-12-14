@@ -218,7 +218,7 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
 # We cannot rely on default build logic, as multiple makefiles are involved.
 build.target
 
-# Ensure errors are grouped with their command invokation
+# Ensure errors are grouped with their command invocation
 #build.pre_args-append \
 #    "--output-sync=line"
 
