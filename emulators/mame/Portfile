@@ -476,7 +476,8 @@ pre-build {
         ]
 
     # BGFX - add appropriate build target, based on whether debug requested
-    # Note: BGFX doesn't support a 32-bit build
+    # Note: BGFX doesn't support 32-bit builds. So if/when we enable this,
+    # we'll have to add additional logic to warn about that.
     if {[variant_isset debug]} {
         set bgfx_target "osx-debug64"
     } else {
