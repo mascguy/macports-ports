@@ -155,9 +155,8 @@ depends_run-append  \
 # Build Options
 #------------------------------------------------------------------------------
 
-# Note: ARM64 support pending
-#supported_archs     ppc ppc64 i386 x86_64 arm64
-supported_archs     ppc ppc64 i386 x86_64
+# Note: ARM64 support untested
+supported_archs     ppc ppc64 i386 x86_64 arm64
 
 use_parallel_build  yes
 use_configure       no
@@ -180,6 +179,14 @@ compiler.cxx_standard   2014
 # Note: Compiler optimization level is controlled by makefile variable 'OPTIMIZE', below.
 configure.cxxflags-delete -O1 -O2 -O3 -Os
 
+# Note: Linker flag '-no_deduplicate' is absolutely vital, ensuring that 'ld'
+# finishes quickly. Without it, the final link time increases by a factor of
+# 10x for a release build... and 50x for a debug build! (The latter can take
+# 50+ minutes without it.)
+configure.cxxflags-append \
+                    "-Xlinker -no_deduplicate" \
+                    "-Wno-unused-command-line-argument"
+
 build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     CC="${configure.cc}" \
                     CXX="${configure.cxx}" \
@@ -187,7 +194,6 @@ build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     OVERRIDE_CXX="${configure.cxx}" \
                     CFLAGS="-isystem${prefix}/include" \
                     LDOPTS="-L${prefix}/lib" \
-                    LDOPTS="-lSDL2" \
                     PRECOMPILE=1 \
                     TESTS=0 \
                     BENCHMARKS=0 \
