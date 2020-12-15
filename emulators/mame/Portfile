@@ -597,39 +597,38 @@ destroot {
         ]
     set mame_copy_list \
         [list \
-            ${worksrcpath}/${executable} \
+            ${mame_release_dir}/${executable} \
             ${worksrcpath}/artwork \
             ${worksrcpath}/bgfx \
-            ${worksrcpath}/ctrlr \
-            ${worksrcpath}/hash \
+            ${mame_release_dir}/ctrlr \
+            ${mame_release_dir}/hash \
             ${worksrcpath}/hlsl \
-            ${worksrcpath}/ini \
+            ${mame_release_dir}/ini \
             ${worksrcpath}/keymaps \
-            ${worksrcpath}/language \
+            ${mame_release_dir}/language \
             ${worksrcpath}/plugins \
-            ${worksrcpath}/roms \
+            ${mame_release_dir}/roms \
             ${worksrcpath}/samples \
-            ${worksrcpath}/docs/build/man \
         ]
     set mame_tools_list \
         [list \
-            ${worksrcpath}/aueffectutil \
-            ${worksrcpath}/castool \
-            ${worksrcpath}/chdman \
-            ${worksrcpath}/floptool \
-            ${worksrcpath}/imgtool \
-            ${worksrcpath}/jedutil \
-            ${worksrcpath}/ldresample \
-            ${worksrcpath}/ldverify \
-            ${worksrcpath}/nltool \
-            ${worksrcpath}/nlwav \
-            ${worksrcpath}/pngcmp \
-            ${worksrcpath}/regrep \
-            ${worksrcpath}/romcmp \
-            ${worksrcpath}/split \
-            ${worksrcpath}/srcclean \
-            ${worksrcpath}/testkeys \
-            ${worksrcpath}/unidasm \
+            ${mame_release_dir}/aueffectutil \
+            ${mame_release_dir}/castool \
+            ${mame_release_dir}/chdman \
+            ${mame_release_dir}/floptool \
+            ${mame_release_dir}/imgtool \
+            ${mame_release_dir}/jedutil \
+            ${mame_release_dir}/ldresample \
+            ${mame_release_dir}/ldverify \
+            ${mame_release_dir}/nltool \
+            ${mame_release_dir}/nlwav \
+            ${mame_release_dir}/pngcmp \
+            ${mame_release_dir}/regrep \
+            ${mame_release_dir}/romcmp \
+            ${mame_release_dir}/split \
+            ${mame_release_dir}/srcclean \
+            ${mame_release_dir}/testkeys \
+            ${mame_release_dir}/unidasm \
         ]
 
     # Remove section 6 man pages, which aren't helpful
@@ -643,10 +642,6 @@ destroot {
 #        delete ${tgt}
     }
 
-    # Copy in generated man page, joining pre-generated files for Tools
-    copy "${worksrcpath}/docs/build/man/MAME.1" \
-        "${mame_release_dir}/docs/man/mame.1"
-
     # Create directories, and copy content
     foreach tgt ${mame_dir_create_list} {
         xinstall -d ${tgt}
@@ -659,6 +654,13 @@ destroot {
             xinstall ${tgt} ${mame_target_dir}
         }
     }
+
+    # Copy generated Mame man page, joining pre-generated files for Tools
+    copy "${worksrcpath}/docs/build/man/MAME.1" \
+        "${mame_release_dir}/docs/man/mame.1"
+    # Copy all docs
+    copy "${mame_release_dir}/docs" \
+        ${mame_share_dir}
 
     unset tgt
 
