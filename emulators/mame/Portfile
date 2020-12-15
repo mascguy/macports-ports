@@ -15,7 +15,7 @@ PortGroup           github 1.0
 PortGroup           compiler_blacklist_versions 1.0
 
 github.setup        mamedev mame 0226 mame
-revision            2
+revision            3
 
 version             [string index ${github.version} 0].[string range ${github.version} 1 end]
 categories          emulators
@@ -230,11 +230,6 @@ build.target
 
 build.post_args
 
-if {[tbool configure.ccache]} {
-    build.post_args-append \
-        "CCACHE=ccache"
-}
-
 # Ensure 'g_mame_build_arch_64' set early, as it's needed later
 if {$build_arch in [list arm64 x86_64 ppc64]} {
     set g_mame_build_arch_64  1
@@ -425,6 +420,7 @@ proc mame_build_run {p_work_path p_makefile p_target p_build_args_list} {
     global build.cmd
     global build.jobs
     global build.pre_args
+    global build.post_args
 
     ui_debug "mame_build_run: p_work_path: ${p_work_path}"
     ui_debug "mame_build_run: p_makefile: ${p_makefile}"
@@ -437,7 +433,8 @@ proc mame_build_run {p_work_path p_makefile p_target p_build_args_list} {
             --file=${p_makefile} \
             [join ${build.pre_args}] \
             ${p_target} \
-            [join ${p_build_args_list}]"
+            [join ${p_build_args_list}] \
+            [join ${build.post_args}]"
 
     ui_debug "mame_build_run: build_cmd_line: ${build_cmd_line}"
 
@@ -495,6 +492,12 @@ if {![variant_isset python37] && ![variant_isset python38] && ![variant_isset py
 #------------------------------------------------------------------------------
 
 pre-build {
+    # Add ccache-related args, if enabled
+    if {[tbool configure.ccache]} {
+        build.post_args-append \
+            "CCACHE=ccache"
+    }
+
     # Main - update build args
     # Note: These need to be set first, as they're also used below
     set py_bin [dict get ${g_mame_python_info_dict} py_bin]
