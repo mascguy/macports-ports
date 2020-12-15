@@ -372,6 +372,22 @@ proc mame_variant_python_setup {p_ver_major p_ver_minor} {
 # Procs - Low Level - Phase Support
 #------------------------------------------------------------------------------
 
+proc mame_get_release_dir {} {
+    global worksrcpath
+    global g_mame_build_arch_64
+
+    # Generate release dir name, based on build options
+    # Format: build/release/[x64|x32]/[Debug|Release]/mame
+    set mame_release_dir \
+        [file join \
+            "${worksrcpath}/build/release" \
+            [expr { ${g_mame_build_arch_64} ? "x64" : "x32" } ] \
+            [expr { [variant_isset debug] ? "Debug" : "Release" } ] \
+            "mame" \
+        ]
+
+    return ${mame_release_dir}
+}
 
 #------------------------------------------------------------------------------
 # Procs - High Level - Phase Support
@@ -564,19 +580,33 @@ build {
     unset target
 }
 
+post-build {
+    set mame_release_dir \
+        mame_get_release_dir
+    ui_debug "Phase post-build: mame_release_dir: ${mame_release_dir}"
+
+    # Copy generated Mame man page, joining pre-generated files for Tools
+    copy "${worksrcpath}/docs/build/man/MAME.1" \
+        "${mame_release_dir}/docs/man/mame.1"
+
+    # Remove section 6 man pages, which aren't helpful
+    set man_page_delete \
+        [glob -nocomplain -type f \
+            -directory "${mame_release_dir}/docs/man" \
+            *.6]
+    ui_debug "Phase post-build: man_page_delete: ${man_page_delete}"
+    foreach tgt ${man_page_delete} {
+        ui_debug "Phase post-build: deleting man page: ${tgt}"
+#        delete ${tgt}
+    }
+}
+
 destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
 
-    # Generate release dir name, based on build options
-    # Format: build/release/[x64|x32]/[Debug|Release]/mame
     set mame_release_dir \
-        [file join \
-            "${worksrcpath}/build/release" \
-            [expr { ${g_mame_build_arch_64} ? "x64" : "x32" } ] \
-            [expr { [variant_isset debug] ? "Debug" : "Release" } ] \
-            "mame" \
-        ]
+        mame_get_release_dir
     ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
 
     set mame_dir_create_list \
@@ -631,21 +661,6 @@ destroot {
             ${mame_release_dir}/unidasm \
         ]
 
-    # Copy generated Mame man page, joining pre-generated files for Tools
-    copy "${worksrcpath}/docs/build/man/MAME.1" \
-        "${mame_release_dir}/docs/man/mame.1"
-
-    # Remove section 6 man pages, which aren't helpful
-    set man_page_delete \
-        [glob -nocomplain -type f \
-            -directory "${mame_release_dir}/docs/man" \
-            *.6]
-    ui_debug "Phase dest-root: man_page_delete: ${man_page_delete}"
-    foreach tgt ${man_page_delete} {
-        ui_debug "Phase dest-root: deleting man page: ${tgt}"
-#        delete ${tgt}
-    }
-
     # Create directories, and copy content
     foreach tgt ${mame_dir_create_list} {
         xinstall -d ${tgt}
@@ -696,13 +711,13 @@ post-destroot {
     ln -s "${prefix}/libexec/mame/mame.sh" \
         ${mame_launch_link}
 
-    # Create soft links to man pages
     set man_page_files \
         [glob -nocomplain \
             -directory "${destroot}${prefix}/share/mame/docs/man" \
             *.1]
     ui_debug "Phase post-destroot: man_page_files: ${man_page_files}"
 
+    # Create soft links to man pages
     xinstall -d ${mp_man_dest_dir}
     foreach f ${man_page_files} {
         ui_debug "Phase post-destroot: man pages: soft linking to: ${f}"
