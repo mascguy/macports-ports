@@ -815,7 +815,12 @@ notes {
 if {[variant_isset tools]} {
     notes-append {
     --------------------------------------------------------------------------
-    Mame tools are available in path ${prefix}/libexec/mame
+    Mame tools are installed. Each has a prefix of 'mame-', to avoid\
+    conflicts with system tools.
+
+    Examples:
+        mame-imgtool
+        mame-split
     }
 }
 
