@@ -610,7 +610,7 @@ build {
 
 post-build {
     set mame_release_dir \
-        mame_get_release_dir
+        [mame_get_release_dir]
     set mame_release_doc_dir \
         "${mame_release_dir}/docs/man"
 
@@ -689,7 +689,7 @@ destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
     set mame_release_dir \
-        mame_get_release_dir
+        [mame_get_release_dir]
 
     ui_debug "Phase destroot: mame_release_dir: ${mame_release_dir}"
 
@@ -716,7 +716,7 @@ destroot {
     # For Tools, prefix each command with defined prefix
     if {[variant_isset tools]} {
         set mame_tools_list \
-            mame_get_tools_list ${mame_release_dir} ""
+            [mame_get_tools_list ${mame_release_dir} ""]
         foreach tgt ${mame_tools_list} {
             set fn [file tail ${tgt}]
             copy ${tgt} "${mame_target_dir}/${g_mame_tools_prefix}-${fn}"
@@ -755,7 +755,7 @@ post-destroot {
     # Create soft links to Tools executables
     if {[variant_isset tools]} {
         set mame_tools_list \
-            mame_get_tools_list ${mame_target_dir} ${g_mame_tools_prefix}
+            [mame_get_tools_list ${mame_target_dir} ${g_mame_tools_prefix}]
 
         ui_debug "Phase post-destroot: mame_tools_list: ${mame_tools_list}"
         foreach f ${mame_tools_list} {
