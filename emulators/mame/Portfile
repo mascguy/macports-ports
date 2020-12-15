@@ -649,9 +649,12 @@ destroot {
     foreach tgt ${mame_copy_list} {
         copy ${tgt} ${mame_target_dir}
     }
+
+    # For Tools, prefix each command with a 'mame-' prefix
     if {[variant_isset tools]} {
         foreach tgt ${mame_tools_list} {
-            xinstall ${tgt} ${mame_target_dir}
+            set fn [file tail ${tgt}]
+            copy ${tgt} "${mame_target_dir}/mame-${fn}"
         }
     }
 
@@ -702,9 +705,9 @@ post-destroot {
     xinstall -d ${mp_man_dest_dir}
     foreach f ${man_page_files} {
         ui_debug "Phase post-destroot: man pages: soft linking to: ${f}"
-        set f_name [file tail ${f}]
-        ln -s "${prefix}/share/mame/docs/man/${f_name}" \
-            "${mp_man_dest_dir}/${f_name}"
+        set fn [file tail ${f}]
+        ln -s "${prefix}/share/mame/docs/man/${fn}" \
+            "${mp_man_dest_dir}/${fn}"
     }
     unset f
 
