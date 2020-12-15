@@ -722,12 +722,26 @@ post-destroot {
     # Substitute placeholder with real executable name
     reinplace "s|@@MACPORTS_MAME_EXECUTABLE@@|${executable}|g" \
         ${mame_launch_script}
-
     # Create soft link 'mame', to launch wrapper script
     ln -s "${prefix}/libexec/mame/mame.sh" \
         ${mame_launch_link}
 
-    # TODO: Create soft links to Tools
+    # Create soft links to Tools executables
+    if {[variant_isset tools]} {
+        set tools_executables \
+            [glob -nocomplain \
+                -directory ${mame_target_dir} \
+                -type f \
+                mame-*]
+
+        ui_debug "Phase post-destroot: tools_executables: ${tools_executables}"
+        foreach f ${tools_executables} {
+            ui_debug "Phase post-destroot: soft linking tool: ${f}"
+            set fn [file tail ${f}]
+            ln -s "${prefix}/libexec/mame/${fn}" \
+                "${destroot}${prefix}/bin/${fn}"
+        }
+    }
 
     set man_page_files \
         [glob -nocomplain \
