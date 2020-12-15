@@ -254,6 +254,8 @@ test.target   tests
 # These allow testing key options, without local portfile modification.
 #------------------------------------------------------------------------------
 
+#options      mame.override.build.bgfx
+
 # Toggle BGFX build, which fails on some MasOS/Xcode combinations.
 # Note: Normally disabled, due to those failures.
 if {[info exists mame.override.build.bgfx]} {
