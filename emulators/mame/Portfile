@@ -631,6 +631,10 @@ destroot {
             ${mame_release_dir}/unidasm \
         ]
 
+    # Copy generated Mame man page, joining pre-generated files for Tools
+    copy "${worksrcpath}/docs/build/man/MAME.1" \
+        "${mame_release_dir}/docs/man/mame.1"
+
     # Remove section 6 man pages, which aren't helpful
     set man_page_delete \
         [glob -nocomplain -type f \
@@ -658,9 +662,6 @@ destroot {
         }
     }
 
-    # Copy generated Mame man page, joining pre-generated files for Tools
-    copy "${worksrcpath}/docs/build/man/MAME.1" \
-        "${mame_release_dir}/docs/man/mame.1"
     # Copy all docs
     copy "${mame_release_dir}/docs" \
         ${mame_share_dir}
