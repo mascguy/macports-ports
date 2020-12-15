@@ -772,7 +772,7 @@ post-destroot {
     }
 
     set man_page_files \
-        [glob -nocomplain \
+        [glob -nocomplain -type f \
             -directory "${destroot}${prefix}/share/mame/docs/man" \
             *.1]
     ui_debug "Phase post-destroot: man_page_files: ${man_page_files}"
