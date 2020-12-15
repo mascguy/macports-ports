@@ -646,8 +646,6 @@ post-build {
     }
     unset tgt
 
-    # TODO: GZip all man pages?
-
     unset man_page_rename_list
     unset man_page_delete_list
     unset mame_release_doc_dir
