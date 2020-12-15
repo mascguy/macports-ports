@@ -719,7 +719,7 @@ destroot {
             [mame_get_tools_list ${mame_release_dir} ""]
         foreach tgt ${mame_tools_list} {
             set fn [file tail ${tgt}]
-            set fn_dest "${mame_target_dir}/${g_mame_tools_prefix}-${fn}"
+            set fn_dest "${mame_target_dir}/${g_mame_tools_prefix}${fn}"
             if {[file exists ${tgt}]} {
                 copy ${tgt} ${fn_dest}
             } else {
