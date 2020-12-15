@@ -583,6 +583,7 @@ build {
 post-build {
     set mame_release_dir \
         mame_get_release_dir
+
     ui_debug "Phase post-build: mame_release_dir: ${mame_release_dir}"
 
     # Copy generated Mame man page, joining pre-generated files for Tools
@@ -599,16 +600,15 @@ post-build {
         ui_debug "Phase post-build: deleting man page: ${tgt}"
 #        delete ${tgt}
     }
+    unset tgt
+
+    unset man_page_delete
+    unset mame_release_dir
 }
 
-destroot {
+pre-destroot {
     set mame_target_dir "${destroot}${prefix}/libexec/mame"
     set mame_share_dir "${destroot}${prefix}/share/mame"
-
-    set mame_release_dir \
-        mame_get_release_dir
-    ui_debug "Phase dest-root: mame_release_dir: ${mame_release_dir}"
-
     set mame_dir_create_list \
         [list \
             ${mame_target_dir} \
@@ -625,6 +625,26 @@ destroot {
             ${mame_target_dir}/sta \
             ${mame_share_dir} \
         ]
+
+    # Create directories
+    foreach tgt ${mame_dir_create_list} {
+        xinstall -d ${tgt}
+    }
+    unset tgt
+
+    unset mame_dir_create_list
+    unset mame_share_dir
+    unset mame_target_dir
+}
+
+destroot {
+    set mame_target_dir "${destroot}${prefix}/libexec/mame"
+    set mame_share_dir "${destroot}${prefix}/share/mame"
+    set mame_release_dir \
+        mame_get_release_dir
+
+    ui_debug "Phase destroot: mame_release_dir: ${mame_release_dir}"
+
     set mame_copy_list \
         [list \
             ${mame_release_dir}/${executable} \
@@ -661,14 +681,10 @@ destroot {
             ${mame_release_dir}/unidasm \
         ]
 
-    # Create directories, and copy content
-    foreach tgt ${mame_dir_create_list} {
-        xinstall -d ${tgt}
-    }
+    # Copy content
     foreach tgt ${mame_copy_list} {
         copy ${tgt} ${mame_target_dir}
     }
-
     # For Tools, prefix each command with a 'mame-' prefix
     if {[variant_isset tools]} {
         foreach tgt ${mame_tools_list} {
@@ -676,19 +692,15 @@ destroot {
             copy ${tgt} "${mame_target_dir}/mame-${fn}"
         }
     }
+    unset tgt
 
     # Copy all docs
     copy "${mame_release_dir}/docs" \
         ${mame_share_dir}
 
-    unset tgt
-
-    unset man_page_delete
-    unset mame_release_dir
-
     unset mame_tools_list
     unset mame_copy_list
-    unset mame_dir_create_list
+    unset mame_release_dir
     unset mame_share_dir
     unset mame_target_dir
 }
@@ -728,7 +740,6 @@ post-destroot {
     unset f
 
     unset man_page_files
-
     unset mame_launch_link
     unset mame_launch_script
     unset mame_share_dir
