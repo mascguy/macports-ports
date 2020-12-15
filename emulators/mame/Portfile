@@ -642,7 +642,7 @@ post-build {
     ui_debug "Phase post-build: man_page_delete_list: ${man_page_delete_list}"
     foreach tgt ${man_page_delete_list} {
         ui_debug "Phase post-build: deleting man page: ${tgt}"
-#        delete ${tgt}
+        delete ${tgt}
     }
     unset tgt
 
