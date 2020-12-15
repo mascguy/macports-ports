@@ -586,6 +586,8 @@ post-build {
 
     ui_debug "Phase post-build: mame_release_dir: ${mame_release_dir}"
 
+    # TODO: Rename Tools-related man pages, to include 'mame-' prefix
+
     # Copy generated Mame man page, joining pre-generated files for Tools
     copy "${worksrcpath}/docs/build/man/MAME.1" \
         "${mame_release_dir}/docs/man/mame.1"
@@ -601,6 +603,8 @@ post-build {
 #        delete ${tgt}
     }
     unset tgt
+
+    # TODO: GZip all man pages
 
     unset man_page_delete
     unset mame_release_dir
@@ -722,6 +726,8 @@ post-destroot {
     # Create soft link 'mame', to launch wrapper script
     ln -s "${prefix}/libexec/mame/mame.sh" \
         ${mame_launch_link}
+
+    # TODO: Create soft links to Tools
 
     set man_page_files \
         [glob -nocomplain \
