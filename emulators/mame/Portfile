@@ -189,8 +189,8 @@ configure.cxxflags-delete -O1 -O2 -O3 -Os
 # 10x for a release build... and 50x for a debug build! (The latter can take
 # 50+ minutes without it.)
 configure.cxxflags-append \
-                    "-Xlinker -no_deduplicate" \
-                    "-Wno-unused-command-line-argument"
+                    -Xlinker -no_deduplicate \
+                    -Wno-unused-command-line-argument
 
 build.args-append   ARCHOPTS="${configure.cxxflags}" \
                     CC="${configure.cc}" \
