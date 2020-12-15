@@ -71,6 +71,9 @@ set g_mame_build_arch_64       0
 # Whether to build the BGFX components
 set g_mame_build_bgfx_enabled  0
 
+# Prefix for Tools executables
+set g_mame_tools_prefix "mame-"
+
 # Python version info, populated by python* variants.
 set g_mame_python_info_dict \
     [dict create \
@@ -389,6 +392,31 @@ proc mame_get_release_dir {} {
     return ${mame_release_dir}
 }
 
+proc mame_get_tools_list {p_dir p_fn_prefix} {
+    set mame_tools_list \
+        [list \
+            "${p_dir}/${p_fn_prefix}aueffectutil" \
+            "${p_dir}/${p_fn_prefix}castool" \
+            "${p_dir}/${p_fn_prefix}chdman" \
+            "${p_dir}/${p_fn_prefix}floptool" \
+            "${p_dir}/${p_fn_prefix}imgtool" \
+            "${p_dir}/${p_fn_prefix}jedutil" \
+            "${p_dir}/${p_fn_prefix}ldresample" \
+            "${p_dir}/${p_fn_prefix}ldverify" \
+            "${p_dir}/${p_fn_prefix}nltool" \
+            "${p_dir}/${p_fn_prefix}nlwav" \
+            "${p_dir}/${p_fn_prefix}pngcmp" \
+            "${p_dir}/${p_fn_prefix}regrep" \
+            "${p_dir}/${p_fn_prefix}romcmp" \
+            "${p_dir}/${p_fn_prefix}split" \
+            "${p_dir}/${p_fn_prefix}srcclean" \
+            "${p_dir}/${p_fn_prefix}testkeys" \
+            "${p_dir}/${p_fn_prefix}unidasm" \
+        ]
+
+    return ${mame_tools_list}
+}
+
 #------------------------------------------------------------------------------
 # Procs - High Level - Phase Support
 #------------------------------------------------------------------------------
@@ -664,36 +692,18 @@ destroot {
             ${mame_release_dir}/roms \
             ${worksrcpath}/samples \
         ]
-    set mame_tools_list \
-        [list \
-            ${mame_release_dir}/aueffectutil \
-            ${mame_release_dir}/castool \
-            ${mame_release_dir}/chdman \
-            ${mame_release_dir}/floptool \
-            ${mame_release_dir}/imgtool \
-            ${mame_release_dir}/jedutil \
-            ${mame_release_dir}/ldresample \
-            ${mame_release_dir}/ldverify \
-            ${mame_release_dir}/nltool \
-            ${mame_release_dir}/nlwav \
-            ${mame_release_dir}/pngcmp \
-            ${mame_release_dir}/regrep \
-            ${mame_release_dir}/romcmp \
-            ${mame_release_dir}/split \
-            ${mame_release_dir}/srcclean \
-            ${mame_release_dir}/testkeys \
-            ${mame_release_dir}/unidasm \
-        ]
 
     # Copy content
     foreach tgt ${mame_copy_list} {
         copy ${tgt} ${mame_target_dir}
     }
-    # For Tools, prefix each command with a 'mame-' prefix
+    # For Tools, prefix each command with defined prefix
     if {[variant_isset tools]} {
+        set mame_tools_list \
+            mame_get_tools_list ${mame_release_dir} ""
         foreach tgt ${mame_tools_list} {
             set fn [file tail ${tgt}]
-            copy ${tgt} "${mame_target_dir}/mame-${fn}"
+            copy ${tgt} "${mame_target_dir}/${g_mame_tools_prefix}-${fn}"
         }
     }
     unset tgt
@@ -728,14 +738,11 @@ post-destroot {
 
     # Create soft links to Tools executables
     if {[variant_isset tools]} {
-        set tools_executables \
-            [glob -nocomplain \
-                -directory ${mame_target_dir} \
-                -type f \
-                mame-*]
+        set mame_tools_list \
+            mame_get_tools_list ${mame_target_dir} ${g_mame_tools_prefix}
 
-        ui_debug "Phase post-destroot: tools_executables: ${tools_executables}"
-        foreach f ${tools_executables} {
+        ui_debug "Phase post-destroot: mame_tools_list: ${mame_tools_list}"
+        foreach f ${mame_tools_list} {
             ui_debug "Phase post-destroot: soft linking tool: ${f}"
             set fn [file tail ${f}]
             ln -s "${prefix}/libexec/mame/${fn}" \
