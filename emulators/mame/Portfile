@@ -611,30 +611,46 @@ build {
 post-build {
     set mame_release_dir \
         mame_get_release_dir
+    set mame_release_doc_dir \
+        "${mame_release_dir}/docs/man"
 
     ui_debug "Phase post-build: mame_release_dir: ${mame_release_dir}"
+    ui_debug "Phase post-build: mame_release_doc_dir: ${mame_release_doc_dir}"
 
-    # TODO: Rename Tools-related man pages, to include 'mame-' prefix
+    # Rename Tools-related man pages, to include defined prefix
+    set man_page_rename_list \
+        [glob -nocomplain -type f \
+            -directory ${mame_release_doc_dir} \
+            *.1]
+    ui_debug "Phase post-build: man_page_rename_list: ${man_page_rename_list}"
+    foreach tgt ${man_page_rename_list} {
+        set fn [file tail ${tgt}]
+        set fn_new "${g_mame_tools_prefix}${fn}"
+        ui_debug "Phase post-build: renaming man page: ${fn} -> ${fn_new}"
+        move ${tgt} "${mame_release_doc_dir}/${fn_new}"
+    }
 
     # Copy generated Mame man page, joining pre-generated files for Tools
     copy "${worksrcpath}/docs/build/man/MAME.1" \
-        "${mame_release_dir}/docs/man/mame.1"
+        "${mame_release_doc_dir}/mame.1"
 
     # Remove section 6 man pages, which aren't helpful
-    set man_page_delete \
+    set man_page_delete_list \
         [glob -nocomplain -type f \
-            -directory "${mame_release_dir}/docs/man" \
+            -directory ${mame_release_doc_dir} \
             *.6]
-    ui_debug "Phase post-build: man_page_delete: ${man_page_delete}"
-    foreach tgt ${man_page_delete} {
+    ui_debug "Phase post-build: man_page_delete_list: ${man_page_delete_list}"
+    foreach tgt ${man_page_delete_list} {
         ui_debug "Phase post-build: deleting man page: ${tgt}"
 #        delete ${tgt}
     }
     unset tgt
 
-    # TODO: GZip all man pages
+    # TODO: GZip all man pages?
 
-    unset man_page_delete
+    unset man_page_rename_list
+    unset man_page_delete_list
+    unset mame_release_doc_dir
     unset mame_release_dir
 }
 
