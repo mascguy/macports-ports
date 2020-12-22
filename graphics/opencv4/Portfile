@@ -27,8 +27,6 @@ long_description    OpenCV (Open Source Computer Vision Library) is an\
 
 homepage            https://opencv.org
 
-conflicts           opencv
-
 master_sites        ${github.master_sites}:${github.project}
 
 distfiles           [lindex ${distfiles} 0]:${github.project}
