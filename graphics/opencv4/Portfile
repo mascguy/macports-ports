@@ -284,7 +284,8 @@ proc opencv4_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_pref
     # TODO: Link Names: Replace prefix 'opencv_' with 'opencv4_'; else, add latter.
     foreach f ${bin_port_files} {
         set fn [file tail ${f}]
-        set f_dest "${p_prefix}/bin/${fn}"
+        set f_dest \
+            [regsub ***=${p_destroot} ${f} ""]
         ui_debug "opencv4_soft_link_binaries: soft-linking file: ${f_dest} -> ${f}"
 #        ln -s ${f} ${f_dest}
     }
@@ -304,6 +305,7 @@ post-destroot {
         ${bin_main_dir} \
         ${bin_port_dir}
 
+    # Create soft links for binaries, each prefixed with 'opencv4_'.
     opencv4_soft_link_binaries \
         ${bin_main_dir} \
         ${bin_port_dir} \
