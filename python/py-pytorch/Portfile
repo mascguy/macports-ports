@@ -17,7 +17,9 @@ supported_archs     x86_64
 
 license             BSD
 
-maintainers         nomaintainer
+maintainers         \
+                    {@mascguy} \
+                    openmaintainer
 
 description         Tensors and dynamic neural networks in Python\
                     with strong GPU acceleration
@@ -32,7 +34,7 @@ long_description    PyTorch is a Python package that provides two\
 
 homepage            https://pytorch.org/
 
-python.versions     36 37 38
+python.versions     36 37 38 39
 python.default_version 37
 
 patch.pre_args      -p1
