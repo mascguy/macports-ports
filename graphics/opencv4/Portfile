@@ -5,9 +5,9 @@ PortGroup           cmake 1.1
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           github 1.0
 
-github.setup        opencv opencv 4.3.0
+github.setup        opencv opencv 4.5.0
 name                opencv4
-revision            1
+revision            0
 categories          graphics science
 platforms           darwin
 license             BSD
@@ -32,9 +32,9 @@ master_sites        ${github.master_sites}:${github.project}
 distfiles           [lindex ${distfiles} 0]:${github.project}
 
 checksums           ${distname}${extract.suffix} \
-                    rmd160  6a01059dd1bf57a21f8663bec5e856607c342e84 \
-                    sha256  e11293aef34048f6c283c844c5260b8914e511586bc0ed30852ce18cefebbc0d \
-                    size    87942711
+                    rmd160  fadb405b7d38f829775da60a62d29368b2159ce4 \
+                    sha256  03d9f7d777d8a62a5481934dbba2fd692b6cb43f1690a8546e45f9bdb1ee0863 \
+                    size    90119002
 
 # modify from _resources/port1.0/group/github-1.0.tcl to avoid file tag issue
 proc move_gh_repo {repo_dir_patt new_name} {
@@ -169,6 +169,7 @@ configure.args-append \
                     \
                     -DBUILD_opencv_python2:BOOL=OFF \
                     -DBUILD_opencv_python3:BOOL=OFF \
+                    -DBUILD_opencv_aruco:BOOL=ON \
                     -DOPENCV_PYTHON_SKIP_DETECTION:BOOL=OFF \
                     -DPYTHON_EXECUTABLE:FILEPATH=/usr/bin/python \
                     -DPYTHON_DEFAULT_EXECUTABLE:FILEPATH=/usr/bin/python
@@ -192,6 +193,13 @@ platform darwin {
                         -DLAPACK_LIBRARIES="-framework Accelerate" \
                         -DLAPACK_CBLAS_H=Accelerate/Accelerate.h \
                         -DLAPACK_LAPACKE_H=Accelerate/Accelerate.h
+}
+
+notes {
+    opencv4 binaries are now prefixed with 'opencv4_', to prevent conflicts\
+    with opencv.
+
+    opencv4 libraries have changed from static to dynamic.
 }
 
 variant opencl description {Enable OpenCL support} {
@@ -235,9 +243,9 @@ variant opencv_contrib description {Build OpenCV with extra modules (untested)} 
                     ${github.project}_contrib-${version}${extract.suffix}:${github.project}_contrib
     checksums-append \
                     ${github.project}_contrib-${version}${extract.suffix} \
-                    rmd160  edee305f9361720ae48043fa7d7325d0b2416af1 \
-                    sha256  83904a2feca4e6f48f43909fbf5e9bfe0985d408cdb9dc7c9e82d70bde71555d \
-                    size    60882932
+                    rmd160  179e9842172a67db96c976e6ab4944b826835970 \
+                    sha256  f16aa7c7960e6a0d855b681d19437d4e05bc8abd6af5adf5ab86f37d1019d663 \
+                    size    60120338
 
     post-extract {
         move_gh_repo ${github.author}-${github.project}-* ${distname}
