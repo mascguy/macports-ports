@@ -274,11 +274,43 @@ proc opencv4_move_binaries {p_bin_main_dir p_bin_port_dir} {
     return 0
 }
 
+proc opencv4_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_prefix} {
+    set bin_port_files \
+        [glob -nocomplain -type f \
+            -directory ${p_bin_port_dir} \
+            *]
+    ui_debug "opencv4_soft_link_binaries: bin_port_files: ${bin_port_files}"
+
+    # TODO: Link Names: Replace prefix 'opencv_' with 'opencv4_'; else, add latter.
+    foreach f ${bin_port_files} {
+        set fn [file tail ${f}]
+        set f_dest "${p_prefix}/bin/${fn}"
+        ui_debug "opencv4_soft_link_binaries: soft-linking file: ${f_dest} -> ${f}"
+#        ln -s ${f} ${f_dest}
+    }
+
+    return 0
+}
+
 post-destroot {
+    set bin_main_dir \
+        "${destroot}${prefix}/bin"
+    set bin_port_dir \
+        "${destroot}${prefix}/libexec/opencv4/bin"
+
     # While the various configure-related options should catch everything, one or more
     # files may be missed. If so, ensure they're moved to the opencv4 bin area.
     opencv4_move_binaries \
-        "${destroot}${prefix}/bin" \
-        "${destroot}${prefix}/libexec/opencv4/bin"
+        ${bin_main_dir} \
+        ${bin_port_dir}
+
+    opencv4_soft_link_binaries \
+        ${bin_main_dir} \
+        ${bin_port_dir} \
+        ${destroot} \
+        ${prefix}
+
+    unset bin_port_dir
+    unset bin_main_dir
 }
 
