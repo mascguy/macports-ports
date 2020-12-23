@@ -7,12 +7,15 @@ PortGroup           github 1.0
 
 github.setup        opencv opencv 4.5.0
 name                opencv4
-revision            0
+revision            1
 categories          graphics science
 platforms           darwin
 license             BSD
 
-maintainers         {stromnov @stromnov} openmaintainer
+maintainers         \
+                    {stromnov @stromnov} \
+                    {@mascguy} \
+                    openmaintainer
 
 description         Open Source Computer Vision Library
 
@@ -259,6 +262,85 @@ variant opencv_contrib description {Build OpenCV with extra modules (untested)} 
 
     configure.args-append \
                     -DOPENCV_EXTRA_MODULES_PATH=${worksrcpath}/${github.project}_contrib/modules
+}
+
+variant qt4 conflicts qt5 description {Build with Qt4 Backend support.} {
+    PortGroup               qt4 1.0
+    configure.args-replace  -DWITH_QT=OFF \
+                            -DWITH_QT=4
+}
+
+variant qt5 conflicts qt4 description {Build with Qt5 Backend support.} {
+    PortGroup               qt5 1.0
+    configure.args-replace  -DWITH_QT=OFF \
+                            -DWITH_QT=5
+}
+
+variant java description {Add Java bindings.} {
+    PortGroup               java 1.0
+    # OpenCV appears to support older Java versions,
+    # and MacPorts users have requested Java 8 support:
+    # see https://trac.macports.org/ticket/60193
+    java.version            1.6+
+    # Use latest LTS Java version as fallback
+    java.fallback           openjdk11
+    depends_build-append    port:apache-ant
+    configure.args-replace  -DBUILD_opencv_java=OFF \
+                            -DBUILD_opencv_java=ON
+}
+
+#if {[variant_isset java] && ![variant_isset python27]} {
+#    configure.args-replace  -DPYTHON_EXECUTABLE=OFF \
+#                            -DPYTHON_EXECUTABLE=/usr/bin/python
+#    configure.args-delete   -DBUILD_opencv_python2=OFF
+#}
+
+set pythonversions {3.5 3.6 3.7 3.8 3.9}
+foreach pdv ${pythonversions} {
+    set pv [join [lrange [split ${pdv} .] 0 1] ""]
+    set conflist ""
+    foreach v ${pythonversions} {
+        if {${v} ne ${pdv}} {
+            set vv [join [lrange [split ${v} .] 0 1] ""]
+            set conflist "${conflist} python${vv}"
+        }
+    }
+    variant python${pv} conflicts {*}${conflist} description "Add bindings for Python ${pdv}" {
+        configure.args-delete \
+                            -DINSTALL_PYTHON_EXAMPLES=OFF \
+                            -DBUILD_opencv_python3=OFF
+    }
+    # settings that depend on loop variables must be set in an appropriate if, not in the
+    # variant declaration scope.
+    if {[variant_isset python${pv}]} {
+        depends_lib-append  port:python${pv} \
+                            port:py${pv}-numpy
+#        if {![variant_isset python27]} {
+#            configure.args-replace \
+#                            -DPYTHON_EXECUTABLE=OFF \
+#                            -DPYTHON_EXECUTABLE=${prefix}/bin/python${pdv}
+#        }
+        configure.args-append \
+                            -DINSTALL_PYTHON_EXAMPLES=ON \
+                            -DPYTHON3_EXECUTABLE=${prefix}/bin/python${pdv} \
+                            -DPYTHON3_LIBRARY=${frameworks_dir}/Python.framework/Versions/${pdv}/lib/libpython${pdv}.dylib \
+                            -DPYTHON3_INCLUDE_DIR=${frameworks_dir}/Python.framework/Versions/${pdv}/Headers \
+                            -DPYTHON3_PACKAGES_PATH=${frameworks_dir}/Python.framework/Versions/${pdv}/lib/python${pdv}/site-packages
+    }
+}
+
+variant tbb description {Use Intel TBB.} {
+    depends_lib-append      port:tbb
+    configure.args-replace  -DWITH_TBB=OFF \
+                            -DWITH_TBB=ON
+    configure.args-append   -DHAVE_TBB=ON \
+                            -DTBB_INCLUDE_DIRS=${prefix}/include
+}
+
+variant vtk description {Include VTK support.} {
+    depends_lib-append      port:vtk
+    configure.args-replace  -DWITH_VTK=OFF \
+                            -DWITH_VTK=ON
 }
 
 livecheck.type      regex
