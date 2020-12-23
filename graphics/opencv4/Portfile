@@ -5,9 +5,9 @@ PortGroup           cmake 1.1
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           github 1.0
 
-github.setup        opencv opencv 4.5.0
+github.setup        opencv opencv 4.5.1
 name                opencv4
-revision            1
+revision            0
 categories          graphics science
 platforms           darwin
 license             BSD
