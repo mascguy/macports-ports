@@ -7,7 +7,7 @@ PortGroup           github 1.0
 
 github.setup        opencv opencv 4.5.1
 name                opencv4
-revision            0
+revision            1
 categories          graphics science
 platforms           darwin
 license             BSD
