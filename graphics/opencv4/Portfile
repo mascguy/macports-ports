@@ -256,3 +256,9 @@ variant opencv_contrib description {Build OpenCV with extra modules (untested)} 
 livecheck.type      regex
 livecheck.url       https://opencv.org/releases.html
 livecheck.regex     {/archive/([0-9.]+)[a-z]?\.[tz]}
+
+post-destroot {
+    move "${destroot}${prefix}/bin/opencv_waldboost_detector" \
+        "${destroot}${prefix}/libexec/opencv4/bin/opencv_waldboost_detector"
+}
+
