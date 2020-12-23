@@ -282,13 +282,15 @@ proc opencv4_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_pref
             *]
     ui_debug "opencv4_soft_link_binaries: bin_port_files: ${bin_port_files}"
 
-    # TODO: Link Names: Replace prefix 'opencv_' with 'opencv4_'; else, add latter.
+    # Link Names: Replace prefix 'opencv_' with 'opencv4_'; else, add latter.
     foreach f ${bin_port_files} {
         set fn [file tail ${f}]
+        set fn_new \
+            [regsub ***="opencv_" ${fn} ""]
         set f_dest \
             [regsub ***=${p_destroot} ${f} ""]
         set f_link \
-            "${p_bin_main_dir}/${bin_prefix}${fn}"
+            "${p_bin_main_dir}/${bin_prefix}${fn_new}"
         ui_debug "opencv4_soft_link_binaries: soft-linking file: ${f_link} -> ${f_dest}"
         ln -s ${f_dest} ${f_link}
     }
