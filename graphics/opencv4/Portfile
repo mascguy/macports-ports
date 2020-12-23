@@ -275,6 +275,7 @@ proc opencv4_move_binaries {p_bin_main_dir p_bin_port_dir} {
 }
 
 proc opencv4_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_prefix} {
+    set bin_prefix "opencv4_"
     set bin_port_files \
         [glob -nocomplain -type f \
             -directory ${p_bin_port_dir} \
@@ -286,8 +287,10 @@ proc opencv4_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_pref
         set fn [file tail ${f}]
         set f_dest \
             [regsub ***=${p_destroot} ${f} ""]
-        ui_debug "opencv4_soft_link_binaries: soft-linking file: ${f_dest} -> ${f}"
-#        ln -s ${f} ${f_dest}
+        set f_link \
+            "${p_bin_main_dir}/${bin_prefix}${fn}"
+        ui_debug "opencv4_soft_link_binaries: soft-linking file: ${f_link} -> ${f_dest}"
+        ln -s ${f_dest} ${f_link}
     }
 
     return 0
