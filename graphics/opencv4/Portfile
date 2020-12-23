@@ -258,7 +258,28 @@ livecheck.url       https://opencv.org/releases.html
 livecheck.regex     {/archive/([0-9.]+)[a-z]?\.[tz]}
 
 post-destroot {
-    move "${destroot}${prefix}/bin/opencv_waldboost_detector" \
-        "${destroot}${prefix}/libexec/opencv4/bin/opencv_waldboost_detector"
+    set bin_main_dir "${destroot}${prefix}/bin"
+    set bin_port_dir "${destroot}${prefix}/libexec/opencv4/bin"
+
+    # While the various configure-related options should catch everything, there
+    # may be one or more missed. If so, ensure they're moved to the opencv4 bin
+    # area.
+    set bin_main_files \
+        [glob -nocomplain -type f \
+            -directory ${bin_main_dir} \
+            *]
+    ui_debug "Phase post-destroot: bin_main_files: ${bin_main_files}"
+
+    foreach f ${bin_main_files} {
+        set fn [file tail ${f}]
+        set f_dest "${bin_port_dir}/${fn}"
+        ui_debug "Moving file: ${f} -> ${f_dest}"
+        move ${f} ${f_dest}
+    }
+    unset f
+
+    unset bin_main_files
+    unset bin_port_dir
+    unset bin_main_dir
 }
 
