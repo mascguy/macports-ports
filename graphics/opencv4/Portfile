@@ -62,7 +62,14 @@ post-extract {
 
 compiler.cxx_standard 2011
 
-compiler.blacklist-append *gcc* {clang < 900} {macports-clang-3.[0-9]} {macports-clang-[4-6].0}
+compiler.blacklist-append \
+                    *gcc* \
+                    {clang < 900} \
+                    {macports-clang-3.[0-9]} \
+                    {macports-clang-[4-6].0}
+
+compiler.whitelist \
+                    macports-clang-10
 
 depends_build-append \
                     port:pkgconfig
