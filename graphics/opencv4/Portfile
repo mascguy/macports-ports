@@ -246,6 +246,14 @@ variant nonfree description {Include nonfree algorithms} {
                         -DOPENCV_ENABLE_NONFREE:BOOL=ON
 }
 
+# Respect legacy variant name 'opencv_contrib', and replace with 'contrib'
+if {[variant_isset opencv_contrib]} {
+    ui_debug "Legacy variant 'opencv_contrib' set; enabling 'contrib'"
+
+    default_variants-append \
+                    +contrib
+}
+
 variant contrib description {Build OpenCV with extra modules (untested)} {
     master_sites-append \
                     https://github.com/${github.author}/${github.project}_contrib/tarball/${version}:${github.project}_contrib
