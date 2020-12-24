@@ -5,7 +5,7 @@ PortGroup           cmake 1.1
 PortGroup           compiler_blacklist_versions 1.0
 PortGroup           github 1.0
 
-github.setup        opencv opencv 4.5.1
+github.setup        opencv opencv 4.5.0
 name                opencv4
 revision            1
 categories          graphics science
@@ -68,8 +68,8 @@ compiler.blacklist-append \
                     {macports-clang-3.[0-9]} \
                     {macports-clang-[4-6].0}
 
-compiler.whitelist \
-                    macports-clang-10
+#compiler.whitelist \
+#                    macports-clang-10
 
 depends_build-append \
                     port:pkgconfig
@@ -82,8 +82,7 @@ depends_lib-append  port:zlib \
                     port:webp \
                     port:openexr \
                     port:ilmbase \
-                    port:ade \
-                    port:google-glog
+                    port:ade
 
 configure.args-append \
                     -DOPENCV_BIN_INSTALL_PATH=${prefix}/libexec/opencv4/bin \
@@ -257,6 +256,10 @@ variant opencv_contrib description {Build OpenCV with extra modules (untested)} 
                     rmd160  93552a948ff67151b7d1b00f60333d870d4c2e8f \
                     sha256  2cb2f0529611b863ea87202252b47f7c11cdddb5b9d8ff9cbb1efbf19732abe6 \
                     size    60605129
+
+    # TODO: Variant 'opencv_contrib': May need to add lib dependency 'google-glog', for 4.5.1+.
+#    depends_lib-append \
+#                    port:google-glog
 
     post-extract {
         move_gh_repo ${github.author}-${github.project}-* ${distname}
