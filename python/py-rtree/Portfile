@@ -5,14 +5,14 @@ PortGroup           python 1.0
 
 name                py-rtree
 python.rootname     Rtree
-version             0.9.4
+version             0.9.6
 revision            0
 categories-append   devel
 platforms           darwin
 license             MIT
 supported_archs     noarch
 
-python.versions     27 35 36 37 38
+python.versions     27 35 36 37 38 39
 
 maintainers         {stromnov @stromnov} openmaintainer
 
@@ -24,13 +24,14 @@ long_description    Rtree is a Python library that uses ctypes and an  \
 
 homepage            https://github.com/Toblerity/rtree
 
-checksums           rmd160  e5fa2deff1edfc4089d952097f46767034186382 \
-                    sha256  cae327e2c03b3da4ea40d0fdf68f3e55fe9f302c56b9f31e1bfeb36dbea73f44 \
-                    size    62017
+checksums           rmd160  fa23c63d8fae8ec4ab67e2a105c5f1ccabd81a15 \
+                    sha256  515b5b3d0942fcdb057a95c365b31a0f9b6b50bc5d03c865488571174409ba18 \
+                    size    44876
 
 if {${name} ne ${subport}} {
     depends_build-append \
-                        port:py${python.version}-setuptools
+                        port:py${python.version}-setuptools \
+                        port:py${python.version}-wheel
     depends_lib-append  port:spatialindex
 
     livecheck.type      none

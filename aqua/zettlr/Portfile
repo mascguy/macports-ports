@@ -3,7 +3,7 @@
 PortSystem          1.0
 PortGroup           github 1.0
 
-github.setup        Zettlr Zettlr 1.8.1 v
+github.setup        Zettlr Zettlr 1.8.3 v
 name                zettlr
 revision            0
 
@@ -32,9 +32,9 @@ maintainers         {gmail.com:herby.gillot @herbygillot} \
                     openmaintainer
 
 checksums           ${distname}${extract.suffix} \
-                    rmd160  cc1110d5c70eec9ebe4766d2ffe47e10a8ad06bf \
-                    sha256  88c3c78b91ebd3e9b71e7999a3cabba40cccf6aaa4d2276501f4145b603c04ab \
-                    size    25656543
+                    rmd160  9be10ebf2e23a8aceb0b3341202a38b0e511878d \
+                    sha256  7219465ae9db918ead76578de5b989ddf8476921a9ca72107b19d4740c516318 \
+                    size    25064201
 
 depends_build       port:go \
                     port:yarn
@@ -46,7 +46,7 @@ build {
     set gopath ${workpath}/go
 
     # Fetch and build JS dependencies
-    system -W ${worksrcpath}        "${build.env} yarn install --frozen-lockfile"
+    system -W ${worksrcpath} "${build.env} yarn install --frozen-lockfile"
 
     # Build electron app
     system -W ${worksrcpath} "${build.env} yarn run release:mac --dir"
