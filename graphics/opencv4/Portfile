@@ -75,7 +75,8 @@ depends_lib-append  port:zlib \
                     port:webp \
                     port:openexr \
                     port:ilmbase \
-                    port:ade
+                    port:ade \
+                    port:google-glog
 
 configure.args-append \
                     -DOPENCV_BIN_INSTALL_PATH=${prefix}/libexec/opencv4/bin \
