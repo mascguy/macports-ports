@@ -246,7 +246,7 @@ variant nonfree description {Include nonfree algorithms} {
                         -DOPENCV_ENABLE_NONFREE:BOOL=ON
 }
 
-variant opencv_contrib description {Build OpenCV with extra modules (untested)} {
+variant contrib description {Build OpenCV with extra modules (untested)} {
     master_sites-append \
                     https://github.com/${github.author}/${github.project}_contrib/tarball/${version}:${github.project}_contrib
     distfiles-append \
