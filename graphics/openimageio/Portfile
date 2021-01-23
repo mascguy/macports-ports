@@ -8,7 +8,7 @@ PortGroup               active_variants 1.1
 PortGroup               compiler_blacklist_versions 1.0
 
 github.setup            OpenImageIO oiio 2.1.17.0
-revision                1
+revision                2
 name                    openimageio
 categories              graphics
 license                 BSD
@@ -115,8 +115,13 @@ depends_lib-append          port:openjpeg
 #configure.args-append       -DUSE_OCIO=OFF
 depends_lib-append          port:opencolorio
 
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path       ${prefix}/libexec/opencv3/cmake
+
 #configure.args-append       -DUSE_OPENCV=OFF
-depends_lib-append          port:opencv
+depends_lib-append          port:opencv3
+cmake.module_path-append    ${opencv_cmake_path}
 
 #configure.args-append       -DUSE_FREETYPE=OFF
 depends_lib-append          port:freetype

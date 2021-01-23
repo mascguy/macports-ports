@@ -8,7 +8,7 @@ PortGroup           active_variants 1.1
 github.setup        mltframework mlt 6.24.0 v
 github.tarball_from releases
 
-epoch               3
+epoch               4
 categories          multimedia
 maintainers         {dennedy.org:dan @ddennedy} {gmail.com:rjvbertin @RJVB} openmaintainer
 license             GPL-2+
@@ -151,12 +151,19 @@ variant gpl3 description {enable GPLv3 components} {
     license                 GPL-3+
 }
 
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path       ${prefix}/libexec/opencv3/cmake
+
 # use an opencv variant to avoid opportunistic dependencies on this library
 # the opencv dependency must match our choice of Qt version, which is
 # another reason why opencv support is provided through a variant.
 variant opencv description {enable OpenCV support} {
-    depends_lib-append      port:opencv
+    depends_lib-append      port:opencv3
     configure.args-delete   --disable-opencv
+    configure.args-append   \
+                            -DCMAKE_MODULE_PATH=${opencv_cmake_path} \
+                            -DCMAKE_PREFIX_PATH=${opencv_cmake_path}
     if {[variant_isset qt4]} {
         require_active_variants opencv qt4
     } elseif {[variant_isset qt5]} {

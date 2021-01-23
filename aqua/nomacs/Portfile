@@ -6,7 +6,7 @@ PortGroup               cmake 1.1
 PortGroup               github 1.0
 
 github.setup            nomacs nomacs 3.16.224
-revision                0
+revision                1
 checksums               rmd160  3bbf6f0939f86b024e27d2afaa7bebe71fe172b7 \
                         sha256  6a1b87a2873ea67f7ec87bfa4695cc0594af047234af86f4d19a30038e373240 \
                         size    1932553
@@ -28,12 +28,20 @@ depends_lib-append      port:exiv2 \
                         port:libraw \
                         port:zlib \
                         port:tiff \
-                        port:opencv
+                        port:opencv3
 qt5.depends_component   qtsvg qttools
 
 worksrcdir              ${worksrcdir}/ImageLounge
 
-configure.args-append   -DCMAKE_INSTALL_PREFIX="${applications_dir}"
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path   ${prefix}/libexec/opencv3/cmake
+
+cmake.install_prefix    ${applications_dir}
+
+cmake.module_path-append \
+                        ${opencv_cmake_path}
+
 configure.args-append   -DQT_QMAKE_EXECUTABLE=${qt_qmake_cmd}
 
 #give name consistent with other macOS applications

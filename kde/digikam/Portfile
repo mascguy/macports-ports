@@ -6,7 +6,7 @@ PortGroup           compiler_blacklist_versions 1.0
 
 name                digikam
 version             4.9.0
-revision            11
+revision            12
 categories          kde kde4
 license             GPL-2+
 maintainers         openmaintainer \
@@ -34,7 +34,7 @@ depends_lib-append  port:kdelibs4 \
                     port:tiff \
                     path:include/turbojpeg.h:libjpeg-turbo \
                     port:libpng \
-                    port:opencv \
+                    port:opencv3 \
                     port:marble
 depends_lib-append  port:libpgf
 
@@ -97,8 +97,14 @@ compiler.blacklist-append   {clang < 318}
 #-DCMAKE_PREFIX_PATH=\"${prefix}/lib/cmake\"
 #-DCMAKE_BUILD_WITH_INSTALL_RPATH=ON
 
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path \
+                      ${prefix}/libexec/opencv3/cmake
+
 configure.args-append -DENABLE_KDEPIMLIBSSUPPORT:BOOL=ON \
-                      -DOpenCV_DIR=${prefix}/lib/cmake \
+                      -DCMAKE_MODULE_PATH=${opencv_cmake_path} \
+                      -DCMAKE_PREFIX_PATH=${opencv_cmake_path} \
                       -DDIGIKAMSC_COMPILE_LIBKGEOMAP:BOOL=ON -DDIGIKAMSC_COMPILE_LIBKVKONTAKTE:BOOL=ON \
                       -DDIGIKAMSC_COMPILE_LIBMEDIAWIKI:BOOL=ON -DDIGIKAMSC_COMPILE_LIBKFACE:BOOL=ON \
                       -Wno-dev \

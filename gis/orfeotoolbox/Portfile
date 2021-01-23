@@ -1,13 +1,13 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
 
 PortSystem          1.0
-PortGroup           cmake 1.0
+PortGroup           cmake 1.1
 PortGroup           qt4 1.0
 PortGroup           conflicts_build 1.0
 
 name                orfeotoolbox
 version             4.0.0
-revision            4
+revision            5
 categories          gis graphics
 platforms           darwin
 license             CeCILL
@@ -42,7 +42,7 @@ depends_lib-append  port:tiff \
                     port:libkml \
                     port:tinyxml \
                     port:muparser \
-                    port:opencv \
+                    port:opencv3 \
                     port:fftw-3
 
 conflicts_build     libsvm \
@@ -59,6 +59,13 @@ cmake.out_of_source     yes
 configure.args-append   -DBUILD_APPLICATIONS=ON \
                         -DBUILD_EXAMPLES=OFF \
                         -DBUILD_TESTING=OFF
+
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path   ${prefix}/libexec/opencv3/cmake
+
+cmake.module_path-append \
+                        ${opencv_cmake_path}
 
 # The default installation path for library is ${prefix}/lib/otb
 # But the cmake PortGroup is using rpath and CMAKE_INSTALL_NAME_DIR=${prefix}/lib

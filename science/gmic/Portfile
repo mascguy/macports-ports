@@ -13,7 +13,7 @@ if {${subport} ne "gmic" && ${subport} ne "gmic-clib"} {
 
 name                gmic
 version             2.9.4
-revision            1
+revision            2
 license             CeCILL
 categories          science graphics
 platforms           darwin
@@ -48,7 +48,7 @@ depends_lib         port:curl \
                     port:ilmbase \
                     path:include/turbojpeg.h:libjpeg-turbo \
                     port:libpng \
-                    port:opencv \
+                    port:opencv4 \
                     port:openexr \
                     port:tiff \
                     port:zlib
@@ -57,6 +57,17 @@ patchfiles          patch-CMakeLists.txt.diff \
                     patch-src-Makefile.diff
 
 compiler.cxx_standard           2011
+
+# Path to CMake module for OpenCV
+# NOTE: OpenCV modules need to be segregated, to avoid clashes between versions
+set opencv_cmake_path           ${prefix}/libexec/opencv4/cmake
+
+if {${subport} ne "gmic-clib"} {
+    cmake.module_path-append    ${opencv_cmake_path}
+    configure.args-append       \
+                                -DOPENCV_INCLUDE_DIR=${prefix}/include/opencv4 \
+                                -DOPENCV_LIB_DIR=${prefix}/lib/opencv4
+}
 
 subport ${name}-qt {
     configure.args-append       -DGMIC_QT_HOST=none
