@@ -76,7 +76,7 @@ patchfiles          patch-fix_dirname_case.diff \
                     patch-modules_python_CMakeLists.txt.diff \
                     patch-modules_core_src_parallel.cpp.diff \
                     patch-modules-highgui-src-window_cocoa.mm.diff \
-                    patch-samples-gpu-CMakeLists.diff
+                    patch-samples-gpu-CMakeLists.txt.diff
 
 cmake.out_of_source yes
 
@@ -158,7 +158,7 @@ configure.args-append \
                     -DWITH_PVAPI=OFF \
                     -DWITH_GIGEAPI=OFF \
                     -DWITH_QT=OFF \
-                    -DWITH_QUICKTIME=OFF \
+                    -DWITH_QUICKTIME=ON \
                     -DWITH_TBB=OFF \
                     -DWITH_CSTRIPES=OFF \
                     -DWITH_TIFF=ON \
@@ -238,6 +238,12 @@ if {[variant_isset universal]} {
 # Video Decode Acceleration Framework is not available
 if {${os.major} <= 9} {
     patchfiles-append       patch-highgui_CMakeLists.txt.diff
+}
+
+variant debug description {Build with debugging info} {
+    configure.args-replace \
+                            -DBUILD_WITH_DEBUG_INFO=OFF \
+                            -DBUILD_WITH_DEBUG_INFO=ON
 }
 
 variant eigen description {Enable eigen support.} {
