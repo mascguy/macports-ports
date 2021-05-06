@@ -60,7 +60,6 @@ depends_build-append \
                     port:pkgconfig
 
 depends_lib-append  \
-                    port:ffmpeg \
                     port:zlib \
                     port:bzip2 \
                     port:libpng \
@@ -74,6 +73,7 @@ patchfiles          patch-fix_dirname_case.diff \
                     patch-install_name.diff \
                     patch-modules_java_CMakeLists.txt.diff \
                     patch-modules_python_CMakeLists.txt.diff \
+                    patch-opencv-ffmpeg.diff \
                     patch-modules_core_src_parallel.cpp.diff \
                     patch-modules-highgui-src-window_cocoa.mm.diff \
                     patch-samples-gpu-CMakeLists.txt.diff
@@ -137,6 +137,7 @@ configure.args-append \
                     -DCMAKE_INSTALL_NAME_DIR=${opencv_install_lib} \
                     \
                     -DWITH_1394=OFF \
+                    -DWITH_AVFOUNDATION=ON \
                     -DWITH_CARBON=OFF \
                     -DWITH_CUBLAS=OFF \
                     -DWITH_CUDA=OFF \
@@ -144,7 +145,7 @@ configure.args-append \
                     -DWITH_CUFFT=OFF \
                     -DWITH_CUBLAS=OFF \
                     -DWITH_EIGEN=OFF \
-                    -DWITH_FFMPEG=ON \
+                    -DWITH_FFMPEG=OFF \
                     -DWITH_GSTREAMER=OFF \
                     -DWITH_GTK=OFF \
                     -DWITH_IMAGEIO=ON \
@@ -158,7 +159,7 @@ configure.args-append \
                     -DWITH_PVAPI=OFF \
                     -DWITH_GIGEAPI=OFF \
                     -DWITH_QT=OFF \
-                    -DWITH_QUICKTIME=ON \
+                    -DWITH_QUICKTIME=OFF \
                     -DWITH_TBB=OFF \
                     -DWITH_CSTRIPES=OFF \
                     -DWITH_TIFF=ON \
@@ -221,6 +222,8 @@ compiler.blacklist-append {llvm-gcc-4.2 < 2336.11}
 
 # Older clang also don't work (#36956)
 compiler.blacklist-append {clang < 318}
+
+configure.ldflags-append    -framework QTKit
 
 # TODO: Actually fix this
 if {[string match "*clang*" ${configure.compiler}]} {
@@ -409,7 +412,7 @@ proc opencv_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_prefi
 proc opencv_fix_pkgconfig {p_destroot p_prefix p_subport p_parent_subport_name} {
     if {${p_subport} eq ${p_parent_subport_name}} {
         set pkgconfig_file \
-            "${p_destroot}${p_prefix}/lib/${p_parent_subport_name}/pkgconfig/opencv.pc"
+            "${p_destroot}${p_prefix}/libexec/${p_parent_subport_name}/lib/pkgconfig/opencv.pc"
 
         ui_debug "opencv_fix_pkgconfig: fixing pkgconfig file ${pkgconfig_file}"
 
