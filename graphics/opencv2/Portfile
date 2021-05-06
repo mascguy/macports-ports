@@ -75,7 +75,8 @@ patchfiles          patch-fix_dirname_case.diff \
                     patch-modules_java_CMakeLists.txt.diff \
                     patch-modules_python_CMakeLists.txt.diff \
                     patch-modules_core_src_parallel.cpp.diff \
-                    patch-modules-highgui-src-window_cocoa.mm.diff
+                    patch-modules-highgui-src-window_cocoa.mm.diff \
+                    patch-samples-gpu-CMakeLists.diff
 
 cmake.out_of_source yes
 
