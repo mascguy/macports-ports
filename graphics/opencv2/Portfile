@@ -384,6 +384,24 @@ proc opencv_move_binaries {p_bin_main_dir p_bin_port_dir} {
     return 0
 }
 
+proc opencv_soft_link_dirs {p_destroot p_prefix p_subport} {
+    ui_debug "opencv_soft_link_dirs"
+
+    set dir_link \
+        "${p_prefix}/libexec/${p_subport}"
+    set dir_dest \
+        "${p_destroot}${dir_link}"
+
+    foreach d { include lib } {
+        set d_link "${p_prefix}/${d}/${p_subport}"
+        set d_dest "${dir_link}/${d}"
+        ui_debug "opencv_soft_link_dirs: soft-linking dir: ${d_link} -> ${d_dest}"
+        ln -s ${d_dest} ${d_link}
+    }
+
+    return 0
+}
+
 proc opencv_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_prefix p_subport} {
     set bin_prefix_old "opencv_"
     set bin_prefix_new "${p_subport}_"
@@ -466,6 +484,12 @@ proc opencv_post_destroot {} {
     opencv_move_binaries \
         ${bin_main_dir} \
         ${bin_port_dir}
+
+    # Create soft links for directories
+    opencv_soft_link_dirs \
+        ${destroot} \
+        ${prefix} \
+        ${parent_subport_name}
 
     # Create soft links for binaries, each prefixed with '<parent_subport_name>_'.
     opencv_soft_link_binaries \
