@@ -279,7 +279,7 @@ variant dc1394 description {Use libdc1394 for FireWire camera. Breaks compatibil
 variant qt4 conflicts qt5 description {Build with Qt4 Backend support.} {
     PortGroup               qt4 1.0
 
-    configure.args-replace  -DWITH_QT=OFF
+    configure.args-delete   -DWITH_QT=OFF
     configure.args-append   -DWITH_QT=ON
 }
 
