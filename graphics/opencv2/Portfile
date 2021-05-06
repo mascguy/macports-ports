@@ -1,0 +1,476 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           cmake 1.1
+PortGroup           compiler_blacklist_versions 1.0
+PortGroup           legacysupport 1.0
+
+name                opencv2
+version             2.4.11
+revision            0
+categories          graphics science
+platforms           darwin
+license             BSD
+
+maintainers         \
+                    {@mascguy} \
+                    openmaintainer
+
+description         Intel(R) Open Source Computer Vision Library
+
+long_description    OpenCV is a library that is mainly aimed at real time \
+                    computer vision. Some example areas would be \
+                    Human-Computer Interaction (HCI), Object Identification, \
+                    Segmentation and Recognition, Face Recognition, Gesture \
+                    Recognition, Motion Tracking, Ego Motion, Motion \
+                    Understanding, Structure From Motion (SFM), and Mobile \
+                    Robotics.
+
+homepage            http://opencv.org
+
+master_sites        sourceforge:project/opencvlibrary/opencv-unix/${version}:opencv
+use_zip             yes
+extract.suffix      zip
+
+distname            opencv-${version}
+distfiles           ${distname}.zip:opencv
+
+checksums           rmd160  793391b05b571859005b98612cb176c02352a94f \
+                    sha256  af1952fd40fb0dc5e369725e073ac4650847e956fbf77c5f206b6da8ce2b1fea \
+                    size    91671436
+
+# v2.4.13
+#checksums           rmd160  4850e6dcb6e3f4b3aa76b26ee8a209e61f16ff43 \
+#                    sha256  fa6a45f635f4e1dbc982b8ccc93206650e7fc584b2f3dd945759ce28b047b94f \
+#                    size    94319943
+
+#------------------------------------------------------------------------------
+# Subport name used for staging files, etc.
+#
+# This is needed to support Python subports, whose names have no relation to
+# the actual physical file layout.
+#
+# NOTE: Presently, 'parent_subport_name' matches 'name'. HOWEVER, this will
+#   change once the various OpenCV-related ports are merged.
+#------------------------------------------------------------------------------
+set parent_subport_name \
+                    ${name}
+
+depends_build-append \
+                    port:pkgconfig
+
+depends_lib-append  \
+                    port:ffmpeg \
+                    port:zlib \
+                    port:bzip2 \
+                    port:libpng \
+                    path:include/turbojpeg.h:libjpeg-turbo \
+                    port:jasper \
+                    port:tiff \
+                    port:ilmbase \
+                    port:openexr
+
+patchfiles          patch-fix_dirname_case.diff \
+                    patch-install_name.diff \
+                    patch-modules_java_CMakeLists.txt.diff \
+                    patch-modules_python_CMakeLists.txt.diff \
+                    patch-modules_core_src_parallel.cpp.diff \
+                    patch-modules-highgui-src-window_cocoa.mm.diff
+
+cmake.out_of_source yes
+
+#------------------------------------------------------------------------------
+# CMake Variables
+#
+# When/if the CMake portgroup is extended to support more of these options,
+# they can be replaced with those equivalents. For now, define them ahead of
+# time, for later re-use.
+#------------------------------------------------------------------------------
+
+# Define all of our base paths up-front
+set opencv_install_prefix \
+                    ${prefix}/libexec/${parent_subport_name}
+set opencv_install_cmake \
+                    ${opencv_install_prefix}/cmake
+set opencv_install_include \
+                    ${prefix}/include/${parent_subport_name}
+set opencv_install_lib \
+                    ${prefix}/lib/${parent_subport_name}
+
+# Populate the few CMake options currently available
+# TODO: Extend CMake portgroup to support more paths
+cmake.install_prefix \
+                    ${opencv_install_prefix}
+cmake_share_module_dir \
+                    ${opencv_install_cmake}
+cmake.install_rpath \
+                    ${opencv_install_lib}
+
+configure.args-append \
+                    -DENABLE_CONFIG_VERIFICATION=OFF \
+                    \
+                    -DOPENCV_CONFIG_INSTALL_PATH=${opencv_install_cmake} \
+                    -DOPENCV_BIN_INSTALL_PATH=${opencv_install_prefix}/bin \
+                    -DOPENCV_SETUPVARS_INSTALL_PATH=${opencv_install_prefix}/scripts \
+                    -DOPENCV_SBIN_INSTALL_PATH=${opencv_install_prefix}/sbin \
+                    -DOPENCV_JAR_INSTALL_PATH=${opencv_install_prefix}/java/jar \
+                    -DOPENCV_JNI_INSTALL_PATH=${opencv_install_prefix}/java/jni \
+                    -DOPENCV_JNI_BIN_INSTALL_PATH=${opencv_install_prefix}/java/jni \
+                    -DOPENCV_TEST_INSTALL_PATH=${opencv_install_prefix}/test/bin \
+                    -DOPENCV_TEST_DATA_PATH=${opencv_install_prefix}/test/data \
+                    -DOPENCV_SAMPLES_BIN_INSTALL_PATH=${opencv_install_prefix}/share/samples/bin \
+                    -DOPENCV_SAMPLES_SRC_INSTALL_PATH=${opencv_install_prefix}/share/samples/src \
+                    -DOPENCV_OTHER_INSTALL_PATH=${opencv_install_prefix}/share/data \
+                    -DOPENCV_DOC_INSTALL_PATH=${opencv_install_prefix}/share/doc \
+                    -DOPENCV_LICENSES_INSTALL_PATH=${opencv_install_prefix}/share/license \
+                    -DOPENCV_INCLUDE_INSTALL_PATH=${opencv_install_include} \
+                    -DOPENCV_LIB_INSTALL_PATH=${opencv_install_lib} \
+                    -DOPENCV_3P_LIB_INSTALL_PATH=${opencv_install_lib}/3rdparty \
+                    -DOPENCV_LIB_ARCHIVE_INSTALL_PATH=${opencv_install_lib}/static \
+                    -DCMAKE_INSTALL_LIBEXECDIR=${opencv_install_prefix} \
+                    -DCMAKE_INSTALL_BINDIR=${opencv_install_prefix}/bin \
+                    -DCMAKE_INSTALL_SBINDIR=${opencv_install_prefix}/sbin \
+                    -DCMAKE_INSTALL_SHAREDIR=${opencv_install_prefix}/share \
+                    -DCMAKE_INSTALL_INCLUDEDIR=${opencv_install_include} \
+                    -DCMAKE_INSTALL_LIBDIR=${opencv_install_lib} \
+                    -DCMAKE_INSTALL_NAME_DIR=${opencv_install_lib} \
+                    \
+                    -DWITH_1394=OFF \
+                    -DWITH_CARBON=OFF \
+                    -DWITH_CUBLAS=OFF \
+                    -DWITH_CUDA=OFF \
+                    -DWITH_VTK=OFF \
+                    -DWITH_CUFFT=OFF \
+                    -DWITH_CUBLAS=OFF \
+                    -DWITH_EIGEN=OFF \
+                    -DWITH_FFMPEG=ON \
+                    -DWITH_GSTREAMER=OFF \
+                    -DWITH_GTK=OFF \
+                    -DWITH_IMAGEIO=ON \
+                    -DWITH_IPP=OFF \
+                    -DWITH_JASPER=ON \
+                    -DWITH_JPEG=ON \
+                    -DWITH_OPENEXR=ON \
+                    -DWITH_OPENGL=ON \
+                    -DWITH_OPENNI=OFF \
+                    -DWITH_PNG=ON \
+                    -DWITH_PVAPI=OFF \
+                    -DWITH_GIGEAPI=OFF \
+                    -DWITH_QT=OFF \
+                    -DWITH_QUICKTIME=OFF \
+                    -DWITH_TBB=OFF \
+                    -DWITH_CSTRIPES=OFF \
+                    -DWITH_TIFF=ON \
+                    -DWITH_UNICAP=OFF \
+                    -DWITH_V4L=OFF \
+                    -DWITH_VIDEOINPUT=OFF \
+                    -DWITH_XIMEA=OFF \
+                    -DWITH_XINE=OFF \
+                    -DWITH_OPENCL=OFF \
+                    -DWITH_OPENCLAMDFFT=OFF \
+                    -DWITH_OPENCLAMDBLAS=OFF \
+                    \
+                    -DBUILD_WITH_DEBUG_INFO=OFF \
+                    -DBUILD_SHARED_LIBS=ON \
+                    -DBUILD_opencv_apps=ON \
+                    -DBUILD_DOCS=OFF \
+                    -DBUILD_EXAMPLES=OFF \
+                    -DBUILD_PERF_TESTS=OFF \
+                    -DBUILD_TESTS=OFF \
+                    \
+                    -DBUILD_ZLIB=OFF \
+                    -DBUILD_TIFF=OFF \
+                    -DBUILD_JASPER=OFF \
+                    -DBUILD_JPEG=OFF \
+                    -DBUILD_PNG=OFF \
+                    -DBUILD_OPENEXR=OFF \
+                    -DBUILD_TBB=OFF \
+                    -DBUILD_FFMPEG=OFF \
+                    \
+                    -DBUILD_opencv_java=OFF \
+                    \
+                    -DINSTALL_C_EXAMPLES=ON \
+                    -DINSTALL_PYTHON_EXAMPLES=ON \
+                    -DENABLE_PRECOMPILED_HEADERS=ON \
+                    -DCMAKE_VERBOSE=ON \
+                    \
+                    -DZLIB_LIBRARY=${prefix}/lib/libz.dylib \
+                    -DBZIP2_LIBRARIES=${prefix}/lib/libbz2.dylib \
+                    -DPYTHON_EXECUTABLE=OFF
+
+if { !${configure.ccache} } {
+    configure.args-append \
+        -DENABLE_CCACHE=NO
+}
+
+set opencv_linker_libs ""
+
+# gcc-4.0 exits with a bus error
+compiler.blacklist-append gcc-4.0
+
+# Xcode 3.1.4's and Xcode 3.2.6's gcc-4.2 fails to build opencv-2.4.10 for i386:
+# opencv-2.4.10/modules/core/src/system.cpp: In static member function 'static cv::HWFeatures cv::HWFeatures::initialize()':
+# opencv-2.4.10/modules/core/src/system.cpp:280: error: can't find a register in class 'BREG' while reloading 'asm'
+# opencv-2.4.10/modules/core/src/system.cpp:238: error: 'asm' operand has impossible constraints
+# opencv-2.4.10/modules/core/src/system.cpp:280: error: 'asm' operand has impossible constraints
+compiler.blacklist-append *gcc-4.2*
+
+# llvm-gcc-4.2 appears to be broken on old XCode (#35368)
+compiler.blacklist-append {llvm-gcc-4.2 < 2336.11}
+
+# Older clang also don't work (#36956)
+compiler.blacklist-append {clang < 318}
+
+# TODO: Actually fix this
+if {[string match "*clang*" ${configure.compiler}]} {
+    post-patch {
+        reinplace "/-Werror=sequence-point/d" ${worksrcpath}/cmake/OpenCVCompilerOptions.cmake
+    }
+}
+
+# PCH broken when universal
+if {[variant_isset universal]} {
+    configure.args-delete   -DENABLE_PRECOMPILED_HEADERS=ON
+    configure.args-append   -DENABLE_PRECOMPILED_HEADERS=OFF
+}
+
+# Video Decode Acceleration Framework is not available
+if {${os.major} <= 9} {
+    patchfiles-append       patch-highgui_CMakeLists.txt.diff
+}
+
+variant eigen description {Enable eigen support.} {
+    depends_lib-append      port:eigen3
+    configure.args-delete   -DWITH_EIGEN=OFF
+    configure.args-append   -DWITH_EIGEN=ON \
+                            -DEIGEN_INCLUDE_PATH=${prefix}/include/eigen3
+}
+
+variant opencl description {Enable OpenCL support.} {
+    pre-configure {
+        if {${os.platform} eq "darwin" && ${os.major} < 11} {
+            ui_error "The OpenCL variant only works with OS X 10.7 Lion or later."
+            return -code error "incompatible OS X version"
+        }
+    }
+    configure.args-delete   -DWITH_OPENCL=OFF
+    configure.args-append   -DWITH_OPENCL=ON
+}
+
+variant openni description {Enable OpenNI support.} {
+    depends_lib-append      port:openni
+    patchfiles-append       patch-cmake_OpenCVFindOpenNI.cmake.diff
+    configure.args-delete   -DWITH_OPENNI=OFF
+    configure.args-append   -DWITH_OPENNI=ON
+
+    post-patch {
+         reinplace "s,@@PREFIX@@,${prefix},g" ${worksrcpath}/cmake/OpenCVFindOpenNI.cmake
+    }
+}
+
+variant dc1394 description {Use libdc1394 for FireWire camera. Breaks compatibility with Apple iSight FireWire camera.} {
+    depends_lib-append      port:libdc1394
+    configure.args-delete   -DWITH_1394=OFF
+    configure.args-append   -DWITH_1394=ON \
+                            -DHAVE_DC1394_2=ON
+}
+
+variant qt4 conflicts qt5 description {Build with Qt4 Backend support.} {
+    PortGroup               qt4 1.0
+
+    configure.args-replace  -DWITH_QT=OFF
+    configure.args-append   -DWITH_QT=ON
+}
+
+variant qt5 conflicts qt4 description {Build with Qt5 Backend support.} {
+    PortGroup               qt5 1.0
+
+    configure.args-delete   -DWITH_QT=OFF
+    configure.args-append   -DWITH_QT=ON
+}
+
+variant java description {Add Java bindings} {
+    PortGroup               java 1.0
+
+    # OpenCV appears to support older Java versions,
+    # and MacPorts users have requested Java 8 support:
+    # see https://trac.macports.org/ticket/60193
+    java.version            1.6+
+    # Use latest LTS Java version as fallback
+    java.fallback           openjdk11
+
+    patchfiles-delete       patch-modules_java_CMakeLists.txt.diff
+    depends_build-append \
+                            port:apache-ant
+    configure.args-replace \
+                            -DBUILD_opencv_java=OFF \
+                            -DBUILD_opencv_java=ON
+}
+
+if {[variant_isset java] && ![variant_isset python27]} {
+    configure.args-delete   -DPYTHON_EXECUTABLE=OFF
+    configure.args-append   -DPYTHON_EXECUTABLE=/usr/bin/python
+}
+
+variant python27 description {Add Python 2.7 bindings.} {
+    depends_lib-append      port:python27 \
+                            port:py27-numpy
+    patchfiles-delete       patch-modules_python_CMakeLists.txt.diff
+    configure.args-delete   -DINSTALL_PYTHON_EXAMPLES=OFF \
+                            -DPYTHON_EXECUTABLE=OFF
+    configure.args-append   -DINSTALL_PYTHON_EXAMPLES=ON \
+                            -DPYTHON_EXECUTABLE=${prefix}/bin/python2.7 \
+                            -DPYTHON_LIBRARY=${prefix}/lib/libpython2.7.dylib \
+                            -DPYTHON_INCLUDE_DIR=${frameworks_dir}/Python.framework/Versions/2.7/Headers \
+                            -DPYTHON_PACKAGES_PATH=${frameworks_dir}/Python.framework/Versions/2.7/lib/python2.7/site-packages
+}
+
+variant tbb description {Use Intel TBB.} {
+    depends_lib-append      port:tbb
+    configure.args-delete   -DWITH_TBB=OFF
+    configure.args-append   -DWITH_TBB=ON \
+                            -DHAVE_TBB=ON \
+                            -DTBB_INCLUDE_DIRS=${prefix}/include
+    lappend opencv_linker_libs "-ltbb" "-ltbbmalloc"
+}
+
+variant vtk description {Include VTK support.} {
+    depends_lib-append      port:vtk
+    configure.args-delete   -DWITH_VTK=OFF
+    configure.args-append   -DWITH_VTK=ON
+}
+
+variant tests description {Enable tests} {
+    configure.args-replace \
+                            -DBUILD_TESTS=OFF \
+                            -DBUILD_TESTS=ON
+
+    configure.args-replace \
+                            -DBUILD_PERF_TESTS=OFF \
+                            -DBUILD_PERF_TESTS=ON
+
+    test.run            yes
+    test.target         test
+}
+
+pre-configure {
+    configure.args-append   -DOPENCV_LINKER_LIBS=\"[join ${opencv_linker_libs} " "]\"
+}
+
+proc opencv_move_binaries {p_bin_main_dir p_bin_port_dir} {
+    set bin_main_files \
+        [glob -nocomplain -type f \
+            -directory ${p_bin_main_dir} \
+            *]
+    ui_debug "opencv_move_binaries: bin_main_files: ${bin_main_files}"
+
+    foreach f ${bin_main_files} {
+        set fn [file tail ${f}]
+        set f_dest "${p_bin_port_dir}/${fn}"
+        ui_debug "opencv_move_binaries: moving file: ${f} -> ${f_dest}"
+        move ${f} ${f_dest}
+    }
+
+    return 0
+}
+
+proc opencv_soft_link_binaries {p_bin_main_dir p_bin_port_dir p_destroot p_prefix p_subport} {
+    set bin_prefix_old "opencv_"
+    set bin_prefix_new "${p_subport}_"
+    set bin_port_files \
+        [glob -nocomplain -type f \
+            -directory ${p_bin_port_dir} \
+            *]
+    ui_debug "opencv_soft_link_binaries: bin_port_files: ${bin_port_files}"
+
+    # Links: Remove prefix 'opencv_', if any; add prefix '<subport>_'.
+    foreach f ${bin_port_files} {
+        set fn [file tail ${f}]
+        set fn_new \
+            [regsub ***=${bin_prefix_old} ${fn} ""]
+        set f_dest \
+            [regsub ***=${p_destroot} ${f} ""]
+        set f_link \
+            "${p_bin_main_dir}/${bin_prefix_new}${fn_new}"
+        ui_debug "opencv_soft_link_binaries: soft-linking file: ${f_link} -> ${f_dest}"
+        ln -s ${f_dest} ${f_link}
+    }
+
+    return 0
+}
+
+proc opencv_fix_pkgconfig {p_destroot p_prefix p_subport p_parent_subport_name} {
+    if {${p_subport} eq ${p_parent_subport_name}} {
+        set pkgconfig_file \
+            "${p_destroot}${p_prefix}/lib/${p_parent_subport_name}/pkgconfig/opencv.pc"
+
+        ui_debug "opencv_fix_pkgconfig: fixing pkgconfig file ${pkgconfig_file}"
+
+        # Fix paths
+        reinplace "s|\$\{exec_prefix\}\/||g" \
+            ${pkgconfig_file}
+        reinplace "s|\$\{prefix\}\/||g" \
+            ${pkgconfig_file}
+
+        # http://trac.macports.org/ticket/42702
+        reinplace {/Libs: /s:\${exec_prefix}/lib/libopencv_:-lopencv_:g} \
+            ${pkgconfig_file}
+        reinplace {/Libs: /s:\.a::g} \
+            ${pkgconfig_file}
+        reinplace {/Libs: /s:\.dylib::g} \
+            ${pkgconfig_file}
+        reinplace {s|Libs: |Libs: -L\${exec_prefix}/lib |g} \
+            ${pkgconfig_file}
+
+        # http://trac.macports.org/ticket/42702
+        if {[variant_isset qt4] || [variant_isset qt5]} {
+            reinplace "s|-L//System/Library/Frameworks ||g" \
+                ${pkgconfig_file}
+            reinplace "s|-lOpenGL.framework|-framework OpenGL|g" \
+                ${pkgconfig_file}
+        }
+    }
+
+    return 0
+}
+
+proc opencv_post_destroot {} {
+    global destroot
+    global prefix
+    global subport
+    global parent_subport_name
+
+    opencv_fix_pkgconfig \
+        ${destroot} \
+        ${prefix} \
+        ${subport} \
+        ${parent_subport_name}
+
+    set bin_main_dir \
+        "${destroot}${prefix}/bin"
+    set bin_port_dir \
+        "${destroot}${prefix}/libexec/${parent_subport_name}/bin"
+
+    # While the various configure-related options should catch everything, one or more
+    # files may be missed. If so, ensure they're moved to the subport's bin area.
+    opencv_move_binaries \
+        ${bin_main_dir} \
+        ${bin_port_dir}
+
+    # Create soft links for binaries, each prefixed with '<parent_subport_name>_'.
+    opencv_soft_link_binaries \
+        ${bin_main_dir} \
+        ${bin_port_dir} \
+        ${destroot} \
+        ${prefix} \
+        ${parent_subport_name}
+}
+
+post-destroot {
+    ui_debug "${subport}: phase post-destroot running"
+    opencv_post_destroot
+}
+
+livecheck.type      sourceforge
+livecheck.name      opencvlibrary
+livecheck.regex     {/[Oo]pen[Cc][Vv]-([0-9.]+)[a-z]?\.[tz]}
