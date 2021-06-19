@@ -4,6 +4,7 @@ PortSystem      1.0
 PortGroup       compiler_blacklist_versions 1.0
 PortGroup       mpi 1.0
 PortGroup       active_variants 1.1
+PortGroup       boost_provider 1.0
 
 version         1.76.0
 
@@ -37,6 +38,9 @@ master_sites    https://boostorg.jfrog.io/artifactory/main/release/${version}/so
 set distver     [join [split ${version} .] _]
 distname        boost_${distver}
 use_bzip2       yes
+
+boost_provider.version \
+                ${version}
 
 compiler.cxx_standard     2011
 compiler.blacklist-append {clang < 1000}
