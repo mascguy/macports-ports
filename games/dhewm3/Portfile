@@ -1,0 +1,53 @@
+# -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:ft=tcl:et:sw=4:ts=4:sts=4
+
+PortSystem          1.0
+PortGroup           github 1.0
+
+github.setup        dhewm dhewm3 1.5.1
+revision            0
+
+categories          games
+platforms           darwin
+license             GPL-3
+
+maintainers         {@mascguy} \
+                    openmaintainer
+
+description         Doom 3 GPL source port
+long_description \
+    dhewm3 is a Doom 3 GPL source port. The goal of dhewm3 is to bring DOOM 3 \
+    to all suitable platforms, with the help of SDL.
+
+github.tarball_from archive
+
+checksums           rmd160  0157b1e8dfc825a6791036a87f447347e9569a59 \
+                    sha256  febaef022ff216435a2ff86f4e1526ac9bccbc401b03bed495a0a2f0b4edfb53 \
+                    size    5400574
+
+supported_archs     i386 x86_64
+
+# TODO: Download and apply Doom 1.3.1 patch as part of installation, at least for x86:
+# http://files.holarse-linuxgaming.de/native/Spiele/Doom%203/doom3-linux-1.3.1.1304.x86.run
+# ./doom3-linux-1.3.1.1304.x86.run --tar xvf base/pak* d3xp/pak*
+
+depends_build       port:cmake \
+                    port:gmake
+
+depends_lib         port:zlib \
+                    port:libsdl2 \
+                    port:openal-soft \
+                    path:include/turbojpeg.h:libjpeg-turbo
+
+configure.dir       ${worksrcpath}/neo
+
+configure.cmd       cmake
+configure.pre_args
+configure.args      -DCMAKE_INSTALL_PREFIX:PATH=${prefix}
+
+build.cmd           gmake
+build.dir           ${worksrcpath}/neo
+build.target
+
+destroot {
+}
+
