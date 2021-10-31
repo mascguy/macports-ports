@@ -3,8 +3,8 @@
 PortSystem          1.0
 
 name                pike
-version             7.6.112
-revision            10
+version             8.0.1116
+revision            0
 categories          lang
 license             GPL-2
 platforms           darwin
@@ -23,9 +23,9 @@ master_sites        ${homepage}pub/pike/all/${version}/
 
 distname            Pike-v${version}
 
-checksums           md5     3ba03096741d6df839d32a940f4a865c \
-                    sha1    211050346d8efc01068e8ea7443f4743116a51be \
-                    rmd160  8983d5bc150beabd1796ff8f05df43e5cf36f467
+checksums           rmd160  1217aa60caa8bc1aa5038e71b3595d3f24c98db3 \
+                    sha256  5020063c755bb182177750221013b199198a7f1eb8ff26c1fb879d375c755891 \
+                    size    16824305
 
 patchfiles          patch-Request.pike
 
