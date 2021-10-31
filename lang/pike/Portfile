@@ -31,6 +31,16 @@ patchfiles          patch-Request.pike
 
 depends_lib         port:bzip2 \
                     port:zlib \
+                    port:cctools \
+                    port:libffi \
+                    port:pkgconfig \
+                    port:coreutils \
+                    port:grep \
+                    port:kerberos5 \
+                    port:fftw \
+                    path:lib/libavcodec.dylib:ffmpeg \
+                    port:libdvbpsi \
+                    port:osxfuse \
                     port:gmp \
                     port:nettle
 
