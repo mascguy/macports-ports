@@ -3,6 +3,8 @@
 PortSystem              1.0
 
 name                    cctools
+conflicts               cctools-devel
+set my_name             cctools
 
 # Xcode 11.3.1
 version                 949.0.1
@@ -13,15 +15,15 @@ revision                3
 dist_subdir             ${name}/${version}_1
 
 categories              devel
-maintainers             {jeremyhu @jeremyhu} openmaintainer
 license                 {APSL-2 GPL-2+}
+maintainers             {jeremyhu @jeremyhu} openmaintainer
 installs_libs           no
+
 description             Compiler Tools for Mac OS X and Darwin
 long_description        A set of essential tools to support development \
                         on Mac OS X and Darwin. Conceptually similar \
                         to binutils on other platforms.
-
-homepage                https://opensource.apple.com/source/${name}/
+homepage                https://opensource.apple.com/source/${my_name}/
 
 distfiles               ${name}-${version}.tar.gz:main \
                         ld64-${ld64_version}.tar.gz:ld64
@@ -382,4 +384,4 @@ post-destroot {
 }
 
 livecheck.type          regex
-livecheck.regex         "${name}-(\[\\d.\]+)"
+livecheck.regex         "${my_name}-(\[\\d.\]+)"
