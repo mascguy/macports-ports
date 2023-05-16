@@ -1,6 +1,6 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 
-# We have an umbrella radar tracking webkit-gtk issues on OS X.  Please relate
+# We have an umbrella radar tracking webkit-gtk issues on OS X. Please relate
 # any future issues with this tracker.
 # http://bugs.webkit.org/show_bug.cgi?id=126492
 
@@ -16,28 +16,30 @@ legacysupport.newest_darwin_requires_legacy 15
 
 name                webkit2-gtk-devel
 conflicts           webkit2-gtk
-version             2.28.2
-revision            5
+set my_name         webkitgtk
+version             2.40.1
+revision            0
 
-description         Apple's WebKit2 HTML rendering library for GTK+3
-long_description    ${description}
-maintainers         {devans @dbevans} {mascguy @mascguy}
 categories          www gnome
 platforms           darwin freebsd
 license             LGPL-2+ BSD
+maintainers         {devans @dbevans} {mascguy @mascguy}
+
+description         Apple's WebKit2 HTML rendering library for GTK+3
+long_description    ${description}
 homepage            http://webkitgtk.org/
+
 master_sites        http://webkitgtk.org/releases/
-
 use_xz              yes
-distname            webkitgtk-${version}
-
+distname            ${my_name}-${version}
 dist_subdir         webkit-gtk
 
-checksums           rmd160  a626f58cf30b6dd1ef8a63c165ce85770c4da675 \
-                    sha256  b9d23525cfd8d22c37b5d964a9fe9a8ce7583042a2f8d3922e71e6bbc68c30bd \
-                    size    21427772
+checksums           rmd160  953121c65430f89785664d3b9a193ff74943a2f2 \
+                    sha256  64e526984f8cd2161ef03ae949af99c002ff333d615e6386b460164a3c1b7ef6 \
+                    size    39599544
 
 depends_build-append \
+                    port:gi-docgen \
                     port:gperf \
                     port:gtk-doc \
                     port:perl5.34 \
@@ -102,20 +104,16 @@ patchfiles-append    patch-enable-plugin-architecture-unix.diff
 # runs without this patch.
 patchfiles-append    patch-bundle-link-webcore.diff
 
-# Fix incompatibility with XCode 12:
-# https://bugs.webkit.org/show_bug.cgi?id=207871
-patchfiles-append    patch-WTF-wtf-getVTablePointer.diff
-
 # Fix build errors due to -WWc++11-narrowing
 # https://bugs.webkit.org/show_bug.cgi?id=211193
-patchfiles-append    patch-bool_narrowed.diff
+#patchfiles-append    patch-bool_narrowed.diff
 
 # Explicitly specify installed dylib paths to g-ir-compile
 # Fixes dlopen errors in apps using webkit2gtk introspection
-patchfiles-append    patch-webkit2gtk-specify-installed-dylibs.diff
+#patchfiles-append    patch-webkit2gtk-specify-installed-dylibs.diff
 
 # Backport https://github.com/WebKit/WebKit/commit/b83958928838b8a997c12a8de06f89377df0a903
-patchfiles-append    patch-icu-68-true-false.diff
+#patchfiles-append    patch-icu-68-true-false.diff
 
 # Fix build with Ruby 3.2+
 # https://github.com/WebKit/WebKit/commit/b7ac5d0ccc7ca3ed6bf4f2d40fde60247ce87d3c
@@ -129,9 +127,12 @@ configure.cppflags-append \
 # it has improved security features, but not all systems can build it at present.
 configure.args-append \
     -DPORT=GTK \
+    -DENABLE_GAMEPAD=OFF \
     -DENABLE_INTROSPECTION=ON \
+    -DENABLE_JOURNALD_LOG=OFF \
     -DENABLE_MINIBROWSER=OFF \
     -DENABLE_VIDEO=ON \
+    -DUSE_GSTREAMER_TRANSCODER=OFF \
     -DUSE_SYSTEM_MALLOC=OFF \
     -DPERL_EXECUTABLE=${prefix}/bin/perl5.34
 
@@ -154,7 +155,8 @@ variant quartz conflicts x11 {
     configure.args-append \
         -DENABLE_QUARTZ_TARGET=ON \
         -DENABLE_X11_TARGET=OFF \
-        -DENABLE_OPENGL=OFF
+        -DENABLE_OPENGL=OFF \
+        -DUSE_OPENGL_OR_ES=OFF
 
 # OPENGL does not work with +quartz, eg: https://trac.macports.org/ticket/52495
 # OPENGL must be explicitly turned off, otherwise GLX is found, but X11 is not, and:
@@ -267,4 +269,4 @@ behaviour from WebKitAvailability.h.
 
 livecheck.type      regex
 livecheck.url       http://webkitgtk.org/releases/
-livecheck.regex     "webkitgtk-(\\d+(?:\\.\\d+)+)"
+livecheck.regex     "${my_name}-(\\d+\\.\\d*\[02468\](?:\\.\\d+)*)"
