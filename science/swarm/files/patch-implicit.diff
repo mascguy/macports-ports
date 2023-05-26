@@ -1,0 +1,30 @@
+--- libobjc/init.c.orig	2023-05-27 11:12:34.000000000 -0400
++++ libobjc/init.c	2023-05-27 11:12:56.000000000 -0400
+@@ -24,6 +24,7 @@
+    however invalidate any other reasons why the executable file might be
+    covered by the GNU General Public License.  */
+ 
++#include <stdlib.h>
+ #include "runtime.h"
+ 
+ /* The version number of this runtime.  This must match the number 
+--- libobjc/nil_method.c.orig	2023-05-27 12:44:00.000000000 -0400
++++ libobjc/nil_method.c	2023-05-27 12:44:30.000000000 -0400
+@@ -27,6 +27,7 @@
+ /* This is the nil method, the function that is called when the receiver
+    of a method is nil */
+ 
++#include <stdlib.h>
+ #include "runtime.h"
+ 
+ id
+--- libobjc/sendmsg.c.orig	2023-05-27 12:45:54.000000000 -0400
++++ libobjc/sendmsg.c	2023-05-27 12:50:38.000000000 -0400
+@@ -24,6 +24,7 @@
+    however invalidate any other reasons why the executable file might be
+    covered by the GNU General Public License.  */
+ 
++#include <Builtins.h>
+ #include "runtime.h"
+ #include "sarray.h"
+ #include "encoding.h"

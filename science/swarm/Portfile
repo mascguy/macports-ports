@@ -36,6 +36,7 @@ depends_lib-append  port:gsed
 universal_variant   no
 
 patchfiles-append   patch-libpng-1.5.diff
+patchfiles-append   patch-implicit.diff
 
 post-patch {
     reinplace {s:-fgnu-runtime:-DH5_USE_16_API -fnested-functions -fgnu-runtime:g} \
@@ -56,7 +57,8 @@ configure.args-append \
                     --x-include=${prefix}/include \
                     --x-lib=${prefix}/lib \
                     --with-tcl=${prefix}/lib \
-                    --with-tk=${prefix}/lib
+                    --with-tk=${prefix}/lib \
+                    --without-jdkdir
 
 # Ensure MacPorts grep is not used, even if it is already installed, because
 # its path would be baked into ${prefix}/bin/libtool-swarm.
@@ -67,11 +69,34 @@ configure.args-append \
 configure.cppflags-append \
                     -DUSE_INTERP_RESULT
 
-pre-configure {
-    configure.args-append --with-ffidir=[glob ${prefix}/lib/libffi-*]
+# Fix for stdlib.h detection
+configure.cppflags-append \
+                    -DHAVE_STDLIB_H
 
-    if {[file exists /System/Library/Frameworks/JavaVM.framework]} {
-        configure.args-append --with-jdkdir=/System/Library/Frameworks/JavaVM.framework
+# Relax Clang strictness
+configure.cppflags-append \
+                    -Wno-deprecated-objc-isa-usage \
+                    -Wno-incompatible-pointer-types \
+                    -Wno-int-conversion \
+                    -Wno-macro-redefined \
+                    -Wno-pointer-sign \
+                    -Wno-unused-command-line-argument
+
+pre-configure {
+    configure.args-append \
+                    --with-ffidir=${prefix}/lib
+}
+
+variant java description {Enable Java support} {
+    PortGroup       java 1.0
+
+    java.version    1.8
+
+    # Java PG doesn't set java.home until after port parsed, so don't set outside of a phase
+    pre-configure {
+        configure.args-replace \
+                    --without-jdkdir \
+                    --with-jdkdir=${java.home}
     }
 }
 
