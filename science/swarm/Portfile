@@ -11,14 +11,15 @@ license             GPL-2
 description         Swarm is a platform for agent-based models (ABMs).
 long_description    ${description}
 homepage            http://www.swarm.org/
-platforms           darwin
 master_sites        https://download.savannah.gnu.org/releases/swarm/src/swarm/
 
 checksums           sha1    7869b678a445c430a55b71e3631e5aa511d02d47 \
                     rmd160  f76274f48509ceb4d346c9724f6fd9070e42c6e2 \
-                    sha256  04b78811235722c2da199a538ac4465aaf4030f1aaf8554b94785fc1482d2c95
+                    sha256  04b78811235722c2da199a538ac4465aaf4030f1aaf8554b94785fc1482d2c95 \
+                    size    4135271
 
-depends_lib         port:blt \
+depends_lib-append \
+                    port:blt \
                     port:tcl \
                     port:tk \
                     port:xpm \
@@ -34,7 +35,7 @@ depends_lib-append  port:gsed
 
 universal_variant   no
 
-patchfiles          patch-libpng-1.5.diff
+patchfiles-append   patch-libpng-1.5.diff
 
 post-patch {
     reinplace {s:-fgnu-runtime:-DH5_USE_16_API -fnested-functions -fgnu-runtime:g} \
@@ -50,7 +51,8 @@ post-patch {
 # Buggy C++
 compiler.blacklist  *clang*
 
-configure.args      --with-x \
+configure.args-append \
+                    --with-x \
                     --x-include=${prefix}/include \
                     --x-lib=${prefix}/lib \
                     --with-tcl=${prefix}/lib \
@@ -58,10 +60,12 @@ configure.args      --with-x \
 
 # Ensure MacPorts grep is not used, even if it is already installed, because
 # its path would be baked into ${prefix}/bin/libtool-swarm.
-configure.args-append ac_cv_path_GREP=/usr/bin/grep
+configure.args-append \
+                    ac_cv_path_GREP=/usr/bin/grep
 
 # Fix build with Tcl 8.6+
-configure.cppflags-append -DUSE_INTERP_RESULT
+configure.cppflags-append \
+                    -DUSE_INTERP_RESULT
 
 pre-configure {
     configure.args-append --with-ffidir=[glob ${prefix}/lib/libffi-*]
@@ -72,7 +76,7 @@ pre-configure {
 }
 
 # sed: RE error: illegal byte sequence
-build.env           LANG=C
+build.env-append    LANG=C
 
 post-destroot {
     # https://trac.macports.org/ticket/34232
