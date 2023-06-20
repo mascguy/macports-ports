@@ -1,0 +1,17 @@
+--- doc/CMakeLists.txt.orig	2023-06-20 18:09:52.000000000 -0400
++++ doc/CMakeLists.txt	2023-06-20 18:11:17.000000000 -0400
+@@ -7,13 +7,7 @@
+ endif ()
+ 
+ # Find the Python interpreter and set the PYTHON_EXECUTABLE variable.
+-if (CMAKE_VERSION VERSION_LESS 3.12)
+-  # This logic is deprecated in CMake after 3.12.
+-  find_package(PythonInterp QUIET REQUIRED)
+-else ()
+-  find_package(Python QUIET REQUIRED)
+-  set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+-endif ()
++set(PYTHON_EXECUTABLE ${Python_EXECUTABLE})
+ 
+ add_custom_target(doc
+   COMMAND ${PYTHON_EXECUTABLE} ${CMAKE_CURRENT_SOURCE_DIR}/build.py
