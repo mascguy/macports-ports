@@ -55,6 +55,9 @@ configure.args-append \
 # Path-Related Variables - END
 #------------------------------------------------------------------------------
 
+set py_ver          3.12
+set py_ver_nodot    [string map {. {}} ${py_ver}]
+
 cmake.generator     Ninja
 
 # Clear optflags; controlled by project, via cmake build type
@@ -73,6 +76,9 @@ compiler.cxx_standard 2011
 compiler.blacklist-append \
                     {clang < 801}
 
+# Patch cmake build for docs, to find python
+patchfiles-append   patch-doc-python.diff
+
 configure.args-append \
                     -DBUILD_SHARED_LIBS:BOOL=ON \
                     -DFMT_DOC:BOOL=OFF \
@@ -83,6 +89,20 @@ pre-activate {
     if {![catch {set installed [lindex [registry_active libfmt] 0]}]} {
         registry_deactivate_composite libfmt "" [list ports_nodepcheck 1]
     }
+}
+
+variant docs description {Install documentation} {
+    depends_build-append \
+                    path:bin/doxygen:doxygen \
+                    port:python${py_ver_nodot} \
+                    port:py${py_ver_nodot}-setuptools
+
+    configure.args-replace \
+                    -DFMT_DOC:BOOL=OFF \
+                    -DFMT_DOC:BOOL=ON
+
+    configure.args-append \
+                    -DPython_EXECUTABLE=${prefix}/bin/python${py_ver}
 }
 
 variant tests description {Enable test support} {
