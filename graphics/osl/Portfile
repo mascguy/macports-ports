@@ -9,11 +9,8 @@ PortGroup               legacysupport 1.1
 PortGroup               boost 1.0
 PortGroup               active_variants 1.1
 
-github.setup            AcademySoftwareFoundation OpenShadingLanguage 1.12.7.0 v
 name                    osl
-revision                1
 categories              graphics
-platforms               darwin
 license                 BSD
 maintainers             @jasonliu-- openmaintainer
 
@@ -28,29 +25,40 @@ long_description        Open Shading Language is a language developed \
                         and can be used for describing materials, \
                         lights, displacement, and pattern generation.
 
-checksums               rmd160  e80e2e0543691dfbe5c08f14d0f1527f5da021e1 \
+# Pin the used version before macOS 11, which is required by pinned versions
+# of dependencies (openimageio, opencolorio, etc).
+if {${os.platform} eq "darwin" && ${os.major} >= 20} {
+    set port_latest     yes
+} else {
+    set port_latest     no
+}
+
+if {${port_latest}} {
+    github.setup        AcademySoftwareFoundation OpenShadingLanguage 1.12.7.0 v
+    revision            1
+
+    checksums           rmd160  e80e2e0543691dfbe5c08f14d0f1527f5da021e1 \
                         sha256  0387104bafe309cac76fbf071d55eabccc3ece1a7108bea9d0649ca0934e8ce8 \
                         size    20249105
-
-compiler.cxx_standard   2014
-
-# Keep this value synchronized with the
-# newest LLVM that is compatible with OSL
-# and be sure that parito is build by the same compiler
-set llvm_version        14
-
-# pin the used version before macOS 11
-# which is forced by used version of openimageio
-if {${os.platform} eq "darwin" && ${os.major} < 20} {
+} else {
     github.setup        AcademySoftwareFoundation OpenShadingLanguage 1.11.13.0 Release-
-    name                osl
     revision            3
 
     checksums           rmd160  87b4fc115da9574735671fb56d3ae34a17171084 \
                         sha256  7ec1e9a460bd22211b14d926287c946d5ffba753d3ee48d08cf6149db2f23e12 \
                         size    14141564
 
+    livecheck.type      none
+}
 
+compiler.cxx_standard   2014
+
+if {${port_latest}} {
+    # Keep this value synchronized with the
+    # newest LLVM that is compatible with OSL
+    # and be sure that parito is build by the same compiler
+    set llvm_version    14
+} else {
     set llvm_version    11
 
     # https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/pull/1319
@@ -60,14 +68,13 @@ if {${os.platform} eq "darwin" && ${os.major} < 20} {
 
 # MacPorts Clang is used "to generate bitcode"
 # See variable LLVM_BC_GENERATOR
-depends_build-append    port:flex \
-                        port:bison \
-                        port:clang-$llvm_version
+depends_build-append    port:bison \
+                        port:clang-$llvm_version \
+                        port:flex
 depends_lib-append      port:llvm-$llvm_version \
-                        port:imath \
+                        port:openimageio \
                         port:pugixml \
-                        port:pybind11 \
-                        port:openimageio
+                        port:pybind11
 
 # As MP clang is available at build time, use for consistency and
 # to avoid potentially a second MP clang being installed unneccessarily.
