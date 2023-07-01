@@ -53,17 +53,43 @@ if {${port_latest}} {
 
 compiler.cxx_standard   2014
 
+boost.version           1.78
+
 if {${port_latest}} {
     # Keep this value synchronized with the
     # newest LLVM that is compatible with OSL
     # and be sure that parito is build by the same compiler
     set llvm_version    14
+
+    depends_lib-append  port:imath
 } else {
     set llvm_version    11
 
     # https://github.com/AcademySoftwareFoundation/OpenShadingLanguage/pull/1319
     # Remove when in next release.
     patchfiles-append   fix-test-disable-cmake.patch
+
+    depends_lib-append  port:ilmbase \
+                        port:openexr2
+
+    set openexr2_base ${prefix}/libexec/openexr2
+
+    configure.pkg_config_path-prepend \
+                        ${openexr2_base}/lib/pkgconfig
+
+    set cmake_module_dir_old ${cmake_share_module_dir}
+    cmake_share_module_dir ${prefix}/foo
+#    cmake.module_path-prepend \
+#                        ${openexr2_base}/lib/cmake
+#    cmake.module_path-append \
+#                        ${cmake_module_dir_old}
+
+    pre-configure {
+        foreach flags {cppflags cxxflags} {
+            configure.${flags}-prepend \
+                        "-isystem ${openexr2_base}/include"
+        }
+    }
 }
 
 # MacPorts Clang is used "to generate bitcode"
