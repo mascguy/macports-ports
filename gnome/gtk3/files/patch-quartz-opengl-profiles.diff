@@ -1,0 +1,12 @@
+--- gdk/quartz/gdkglcontext-quartz.c.orig	2023-05-22 17:57:38.000000000 -0400
++++ gdk/quartz/gdkglcontext-quartz.c	2023-05-22 17:59:19.000000000 -0400
+@@ -108,7 +108,9 @@
+   NSOpenGLContext *ctx;
+   NSOpenGLPixelFormatAttribute attrs[] =
+     {
++#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+       NSOpenGLPFAOpenGLProfile, NSOpenGLProfileVersion3_2Core,
++#endif
+       NSOpenGLPFADoubleBuffer,
+       NSOpenGLPFAColorSize, 24,
+       NSOpenGLPFAAlphaSize, 8,

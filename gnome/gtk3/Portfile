@@ -86,6 +86,9 @@ patchfiles-append   patch-tests-gdkgears.diff
 # https://github.com/mesonbuild/meson/issues/7652
 patchfiles-append   patch-sincos.diff
 
+# Quartz patch to avoid using OpenGL profiles not available for 10.6 and earlier
+patchfiles-append   patch-quartz-opengl-profiles.diff
+
 # gtk3 +quartz uses instancetype which is not available
 # before approximately Xcode 4.6 (#49391)
 # if building +x11 blacklist comilers that do not support C11
@@ -138,7 +141,11 @@ configure.cppflags-append \
                     -DX_LOCALE
 
 configure.cflags-append \
-                    -fstrict-aliasing
+                    -fstrict-aliasing \
+                    -Wno-incompatible-function-pointer-types \
+                    -Wno-objc-method-access \
+                    -Wno-error=unknown-warning-option \
+                    -Wno-unknown-warning-option
 
 configure.args-append \
                     -Dtests=false \
@@ -176,6 +183,14 @@ platform darwin {
         if {[variant_isset quartz]} {
             patchfiles-append   patch-gdk_quartz_gdkcursor-quartz-10_6_compat.diff
         }
+    }
+
+    if {${os.major} <= 10} {
+        # Add AppKit wrapper header to compiler library paths
+        configure.cflags-prepend        -isystem ${filespath}/old_appkit_compat
+        configure.cxxflags-prepend      -isystem ${filespath}/old_appkit_compat
+        configure.objcflags-prepend     -isystem ${filespath}/old_appkit_compat
+        configure.objcxxflags-prepend   -isystem ${filespath}/old_appkit_compat
     }
 
     if {${os.major} <= 11} {
