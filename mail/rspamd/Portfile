@@ -44,6 +44,9 @@ long_description    Rspamd is an advanced spam filtering system and \
 # legacysupport needed for open_memstream, on 10.12 and earlier
 legacysupport.newest_darwin_requires_legacy 16
 
+# Add support for cmake option ENABLE_EV_USE_MONOTONIC
+patchfiles-append   patch-libev-monotonic.diff
+
 depends_build-append \
                     port:pkgconfig
 
@@ -95,6 +98,15 @@ libpath             ${prefix}/var/lib/${name}
 # See https://github.com/rspamd/rspamd/issues/2883
 cmake.set_osx_architectures no
 
+# Clear optflags; controlled by project, via cmake build type
+configure.optflags
+
+if {[variant_isset debug]} {
+    cmake.build_type Debug
+} else {
+    cmake.build_type RelWithDebInfo
+}
+
 # Reference: https://github.com/rspamd/rspamd/blob/master/CMakeLists.txt
 # Also see https://github.com/rspamd/rspamd/issues/2884
 configure.args-append \
@@ -110,6 +122,7 @@ configure.args-append \
                     -DENABLE_PCRE2=ON \
                     -DENABLE_SNOWBALL=ON \
                     -DENABLE_TORCH=ON \
+                    -DENABLE_EV_USE_MONOTONIC=OFF \
                     -DINSTALL_EXAMPLES=ON \
                     -DLIBDIR=${prefix}/lib \
                     -DLOGDIR=${prefix}/var/log/${name} \
