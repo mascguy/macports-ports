@@ -1,0 +1,18 @@
+--- app/display/gimpdisplayshell-draw.c.orig	2023-05-21 18:51:23.000000000 -0400
++++ app/display/gimpdisplayshell-draw.c	2023-05-21 18:57:42.000000000 -0400
+@@ -162,6 +162,7 @@
+       gtk_widget_get_window (gtk_widget_get_toplevel (GTK_WIDGET (shell))));
+ #elif defined(GDK_WINDOWING_QUARTZ)
+   /* gtk2/osx retina support */
++#if MAC_OS_X_VERSION_MAX_ALLOWED >= 1070
+   if ([
+       [NSScreen mainScreen]
+       respondsToSelector: @selector(backingScaleFactor)
+@@ -172,6 +173,7 @@
+     }
+   }
+ #endif
++#endif
+ 
+   scale  = MIN (scale, GIMP_DISPLAY_RENDER_MAX_SCALE);
+   scale *= MAX (shell->scale_x, shell->scale_y);
