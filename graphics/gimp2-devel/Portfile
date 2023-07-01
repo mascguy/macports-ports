@@ -102,6 +102,10 @@ configure.cflags-append \
 patchfiles-append   patch-etc-gimprc.in.diff
 patchfiles-append   patch-mypaint_brushes_dir.diff
 
+# Disable display scale factor for 10.6 and earlier, due to lack of support
+# https://trac.macports.org/ticket/58082#comment:14
+patchfiles-append   patch-display-scale-factor.diff
+
 # Disable update check for 10.8 and earlier, due to lack of NSURLSession
 # Upstream merge request: https://gitlab.gnome.org/GNOME/gimp/-/merge_requests/913
 patchfiles-append   patch-updatecheck-nsurlsession.diff
