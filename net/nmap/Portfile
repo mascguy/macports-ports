@@ -52,14 +52,21 @@ configure.args	--without-zenmap \
                 --mandir=\\\${prefix}/share/man \
                 --infodir=\\\${prefix}/share/info \
                 --with-liblua=included
-		
-# https://trac.macports.org/ticket/58837
-# build system does not pass the stdlib on the link line resulting in link errors
-# for some build configurations using non-default stdlib settings
-if {${os.platform} eq "darwin" && ${os.major} < 13} {
-  if {[string match *clang* ${configure.cxx}] && ${configure.cxx_stdlib} ne ""} {
-    configure.ldflags-append -stdlib=${configure.cxx_stdlib}
-  }
+
+platform darwin {
+    if {${os.version} < 10} {
+        patchfiles-append \
+                patch-drop-cpp-precomp.diff
+    }
+
+    # https://trac.macports.org/ticket/58837
+    # build system does not pass the stdlib on the link line resulting in link errors
+    # for some build configurations using non-default stdlib settings
+    if {${os.version} < 13} {
+        if {[string match *clang* ${configure.cxx}] && ${configure.cxx_stdlib} ne ""} {
+            configure.ldflags-append -stdlib=${configure.cxx_stdlib}
+        }
+    }
 }
 
 # nmap's configure script in nselib-bin does not respect --with-liblua=included
