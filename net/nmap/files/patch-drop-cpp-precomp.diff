@@ -1,0 +1,13 @@
+--- configure.orig	2023-09-10 12:49:34.000000000 -0400
++++ configure	2023-09-10 12:49:53.000000000 -0400
+@@ -6237,10 +6237,6 @@
+ fi
+ 
+ 
+-if test $needs_cpp_precomp = yes; then
+-  CXXFLAGS="-no-cpp-precomp $CXXFLAGS"
+-fi
+-
+ if test $have_libpcap = yes; then
+   if test "${LIBPCAP_INC+set}" = "set"; then
+     CPPFLAGS="-I$LIBPCAP_INC $CPPFLAGS"
