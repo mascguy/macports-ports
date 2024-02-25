@@ -1,37 +1,58 @@
 # -*- coding: utf-8; mode: tcl; tab-width: 4; indent-tabs-mode: nil; c-basic-offset: 4 -*- vim:fenc=utf-8:filetype=tcl:et:sw=4:ts=4:sts=4
 
-# We have an umbrella radar tracking webkit-gtk issues on OS X. Please relate
+# We have an umbrella radar tracking webkit-gtk issues on OS X.  Please relate
 # any future issues with this tracker.
 # http://bugs.webkit.org/show_bug.cgi?id=126492
 
 PortSystem          1.0
 PortGroup           active_variants 1.1
 PortGroup           cmake 1.1
-PortGroup           legacysupport 1.1
+platform darwin {
+    PortGroup       legacysupport 1.1
+    PortGroup       compiler_blacklist_versions 1.0
 
-compiler.cxx_standard 2017
+    # clang-12 is the 1st version I have installed that compiles FileSystem.cpp (using std::filesystem) correctly
+    compiler.blacklist {clang < 602} {macports-clang-3.[0-9]} {macports-clang-[4-9].0} {macports-clang-1[0-1]}
+}
+
+compiler.cxx_standard 2020
+
+platform darwin {
+    # Fix compilation for Angle subproject: platform.h: error: 'TARGET_OS_OSX' is not defined
+    legacysupport.newest_darwin_requires_legacy 15
+}
 cmake.generator     Ninja
-# Fix compilation for Angle subproject: platform.h: error: 'TARGET_OS_OSX' is not defined
-legacysupport.newest_darwin_requires_legacy 15
+build.pre_args-prepend -k 0
 
-name                webkit2-gtk-devel
+# ensure pre-compiled headers and the possible use of ccache can co-exist
+configure.env-append \
+                    "CCACHE_SLOPPINESS=pch_defines,time_macros"
+build.env-append    "CCACHE_SLOPPINESS=pch_defines,time_macros"
+
 conflicts           webkit2-gtk
-set my_name         webkitgtk
+name                webkit2-gtk-devel
+set upstream_name   webkitgtk
 version             2.40.1
-revision            0
 
-categories          www gnome
-platforms           darwin freebsd
-license             LGPL-2+ BSD
-maintainers         {devans @dbevans} {mascguy @mascguy}
-
-description         Apple's WebKit2 HTML rendering library for GTK+3
+description         Apple's WebKit2 HTML rendering library for GTK+3,
+if {${subport} eq "${name}"} {
+    description-append \
+                    API=webkit2gtk-4.0
+} else {
+    description-append \
+                    API=webkit2gtk-4.1
+}
 long_description    ${description}
+maintainers         {devans @dbevans} {kencu @kencu}
+categories          www gnome
+platforms           darwin freebsd linux
+license             LGPL-2+ BSD
 homepage            http://webkitgtk.org/
-
 master_sites        http://webkitgtk.org/releases/
+
 use_xz              yes
-distname            ${my_name}-${version}
+distname            ${upstream_name}-${version}
+
 dist_subdir         webkit-gtk
 
 checksums           rmd160  953121c65430f89785664d3b9a193ff74943a2f2 \
@@ -39,44 +60,50 @@ checksums           rmd160  953121c65430f89785664d3b9a193ff74943a2f2 \
                     size    39599544
 
 depends_build-append \
-                    port:gi-docgen \
                     port:gperf \
-                    port:gtk-doc \
-                    port:perl5.34 \
+                    port:perl5 \
                     port:pkgconfig \
                     port:python27 \
-                    port:py27-simplejson
+                    port:unifdef
 
 depends_lib-append  port:atk \
-                    port:at-spi2-atk \
                     port:bison \
                     path:lib/pkgconfig/cairo.pc:cairo \
                     port:flex \
-                    port:fontconfig \
                     port:freetype \
-                    port:enchant2 \
-                    port:geoclue2 \
                     path:lib/pkgconfig/glib-2.0.pc:glib2 \
                     path:lib/pkgconfig/gobject-introspection-1.0.pc:gobject-introspection \
                     port:gstreamer1 \
-                    port:gstreamer1-gst-plugins-bad \
                     port:gstreamer1-gst-plugins-base \
                     port:gstreamer1-gst-plugins-good \
                     path:lib/pkgconfig/gtk+-3.0.pc:gtk3 \
                     path:lib/pkgconfig/harfbuzz-icu.pc:harfbuzz-icu \
-                    port:hyphen \
                     path:lib/pkgconfig/icu-uc.pc:icu \
                     path:include/turbojpeg.h:libjpeg-turbo \
                     port:libnotify \
                     port:libpng \
                     port:libsecret \
-                    path:lib/pkgconfig/libsoup-2.4.pc:libsoup \
+                    port:libsoup-2.4 \
                     port:libxml2 \
                     port:libxslt \
                     port:sqlite3 \
                     port:webp \
                     port:woff2 \
                     port:zlib
+platform darwin {
+    # doc generation should frankly be a variant because how Joe Users consult the stuff?
+    depends_build-append \
+                    port:gtk-doc \
+                    port:py27-simplejson
+
+#                     port:gstreamer1-gst-plugins-bad
+    depends_lib-append \
+                    port:at-spi2-atk \
+                    port:fontconfig \
+                    port:geoclue2 \
+                    port:enchant2 \
+                    port:hyphen
+}
 
 
 # 1. add missing JavaScriptCore include directory used only on Apple webkit builds
@@ -86,11 +113,13 @@ depends_lib-append  port:atk \
 # 5. change some int64_t to gint64 to stop typedef errors in gstreamer
 patchfiles-append   patch-webkit2gtk-macports.diff
 
-# and a few more for webkit2-gtk-2.27.2
-patchfiles-append   patch-webkit2gtk-272-macports.diff
+platform darwin {
+    # and a few more for webkit2-gtk-2.27.2
+    patchfiles-append   patch-webkit2gtk-272-macports.diff
 
-# and a few more for 282
-patchfiles-append   patch-webkit2gtk-2282-unprotected-egl-changes.diff
+    # and a few more for 282
+    patchfiles-append   patch-webkit2gtk-2282-unprotected-egl-changes.diff
+}
 
 # os log is only available on newer systems.
 patchfiles-append   patch-webkit2gtk-2282-os-log-availability.diff
@@ -100,17 +129,22 @@ patchfiles-append   patch-webkit2gtk-2282-os-log-availability.diff
 # configure.args-append -DENABLE_NETSCAPE_PLUGIN_API=OFF
 patchfiles-append    patch-enable-plugin-architecture-unix.diff
 
-# add a link library to WebCore. I am not sure this is still needed; builds and
-# runs without this patch.
-patchfiles-append    patch-bundle-link-webcore.diff
+platform darwin {
+    # add a link library to WebCore. I am not sure this is still needed; builds and
+    # runs without this patch.
+    patchfiles-append    patch-bundle-link-webcore.diff
+
+}
 
 # Fix build errors due to -WWc++11-narrowing
 # https://bugs.webkit.org/show_bug.cgi?id=211193
 #patchfiles-append    patch-bool_narrowed.diff
 
-# Explicitly specify installed dylib paths to g-ir-compile
-# Fixes dlopen errors in apps using webkit2gtk introspection
-#patchfiles-append    patch-webkit2gtk-specify-installed-dylibs.diff
+platform darwin {
+    # Explicitly specify installed dylib paths to g-ir-compile
+    # Fixes dlopen errors in apps using webkit2gtk introspection
+#     patchfiles-append    patch-webkit2gtk-specify-installed-dylibs.diff
+}
 
 # Backport https://github.com/WebKit/WebKit/commit/b83958928838b8a997c12a8de06f89377df0a903
 #patchfiles-append    patch-icu-68-true-false.diff
@@ -126,7 +160,9 @@ configure.cppflags-append \
 # it is preferred to use the WebKit built in bmalloc if it builds on a given os.
 # it has improved security features, but not all systems can build it at present.
 configure.args-append \
+    -DUSE_APPLE_ICU=OFF \
     -DPORT=GTK \
+    -DENABLE_WEBDRIVER=OFF \
     -DENABLE_GAMEPAD=OFF \
     -DENABLE_INTROSPECTION=ON \
     -DENABLE_JOURNALD_LOG=OFF \
@@ -134,7 +170,22 @@ configure.args-append \
     -DENABLE_VIDEO=ON \
     -DUSE_GSTREAMER_TRANSCODER=OFF \
     -DUSE_SYSTEM_MALLOC=OFF \
-    -DPERL_EXECUTABLE=${prefix}/bin/perl5.34
+    -DPERL_EXECUTABLE=${prefix}/bin/perl5 \
+    -DENABLE_ACCELERATED_2D_CANVAS=ON \
+    -DENABLE_ASYNC_SCROLLING=ON \
+    -DENABLE_WEBGL=OFF \
+    -DENABLE_DOCUMENTATION=OFF \
+    -DUSE_AVIF=OFF \
+    -DUSE_SOUP2=ON
+platform linux {
+    configure.args-replace \
+        -DENABLE_WEBGL=OFF \
+        -DENABLE_WEBGL=ON
+    configure.args-append \
+        -DUSE_WPE_RENDERER=OFF \
+        -DENABLE_BUBBLEWRAP_SANDBOX=OFF \
+        -DUSE_LD_LLD=OFF -DUSE_LD_GOLD=OFF
+}
 
 pre-configure {
     if {![variant_isset quartz] && ![variant_isset x11]} {
@@ -142,12 +193,21 @@ pre-configure {
     }
 }
 
-if {![variant_isset quartz]} {
+if {${os.platform} ne "darwin" || ![variant_isset quartz]} {
     default_variants-append +x11
 }
 
 # this is nice to have, and should be the default
 default_variants-append +minibrowser
+
+subport ${name}-4.1 {
+    depends_lib-replace \
+        port:libsoup-2.4 \
+        port:libsoup
+    configure.args-replace \
+        -DUSE_SOUP2=ON \
+        -DUSE_SOUP2=OFF
+}
 
 variant quartz conflicts x11 {
     require_active_variants path:lib/pkgconfig/gtk+-3.0.pc:gtk3 quartz
@@ -172,16 +232,52 @@ variant x11 conflicts quartz {
         -DENABLE_QUARTZ_TARGET=OFF \
         -DENABLE_X11_TARGET=ON \
         -DENABLE_OPENGL=ON
+    platform darwin {
+        configure.args-append \
+            -DUSE_GBM=OFF 
+    }
 
     depends_lib-append \
-        port:mesa \
-        port:xorg-libXt
+        port:mesa
+    platform darwin {
+        depends_lib-append \
+            port:xorg-libXt
+    }
+}
+
+
+variant av1 description {build in AV1 image file support} {
+    depends_lib-append \
+        port:libavif
+    configure.args-replace \
+        -DUSE_AVIF=OFF \
+        -DUSE_AVIF=ON
 }
 
 variant minibrowser description {Build and install MiniBrowser (for testing)} {
     configure.args-delete   -DENABLE_MINIBROWSER=OFF
     configure.args-append   -DENABLE_MINIBROWSER=ON
-    depends_run-append       port:adwaita-icon-theme
+    platform darwin {
+        depends_build-append port:cctools
+        depends_run-append  port:adwaita-icon-theme
+    }
+}
+
+platform linux {
+    variant wayland description {Enable Wayland support} {}
+    if {[variant_isset wayland]} {
+        ui_warn "The Wayland variant has not yet been implemented"
+        pre-fetch {
+            return -code error "Invalid variant requested"
+        }
+        depends_lib-append \
+            port:libwpe
+        configure.args-append \
+            -DENABLE_WAYLAND_TARGET=ON
+    } else {
+        configure.args-append \
+            -DENABLE_WAYLAND_TARGET=OFF
+    }
 }
 
 # see https://trac.macports.org/ticket/56792
@@ -192,7 +288,7 @@ variant minibrowser description {Build and install MiniBrowser (for testing)} {
 universal_variant   no
 
 # Fix builds if ccache happens to be installed when configure.ccache=no
-if {![option configure.ccache]} {
+if {![option configure.ccache] && ${configureccache} eq ""} {
     build.env-append        CCACHE_DIR=${workpath}/.ccache
 }
 
@@ -207,12 +303,15 @@ if {${os.platform} eq "darwin" && ${os.major} <= 16} {
     patchfiles-append       patch-source-wtf-wtf-unix-cputimeunix-cpp-darwin-version-restore.diff
 
     # some Darwin versions don't have MAP_JIT; only use it if available
-    patchfiles-append       patch-source-wtf-wtf-osallocatorposix-cpp-map-jit.diff
+    # NEEDS REFACTORING
+    # patchfiles-append       patch-source-wtf-wtf-osallocatorposix-cpp-map-jit.diff
 
     # gl cocoa build continues to fail due to use of API not available on darwin 12 or earlier
     # so gstreamergl is not available at present for darwin 12 or earlier
     # todo clarify further where this is exactly needed
-    configure.args-append -DUSE_GSTREAMER_GL=OFF
+    if {${os.major} <= 12} {
+        configure.args-append -DUSE_GSTREAMER_GL=OFF
+    }
 
     # for the webcore/page/crypt code to flow correctly,
     # ENABLE_WEB_CRYPTO has to be ON for 10.10+ and OFF for 10.9 and less
@@ -238,12 +337,35 @@ if {${os.platform} eq "darwin" && ${os.major} <= 16} {
     }
 
     # there is a missing header that manifests on 10.7 and less
-    patchfiles-append patch-webkit2gtk-source-javascriptcore-jit-executableallocator-missingfcntl-h-older-systems.diff
+    # NEEDS REFACTORING
+    # patchfiles-append patch-webkit2gtk-source-javascriptcore-jit-executableallocator-missingfcntl-h-older-systems.diff
+
+    # include the proper Mach VM header:
+    patchfiles-append       patch-mach_vm.diff
+    patchfiles-append       patch-gigacage.diff \
+                            patch-currenttime.diff \
+                            patch-no-machsendright.diff \
+                            patch-no-cocoa-headers.diff \
+                            patch-mactypes.diff
+    # This is a tricky one and seems related to how CMake's "make" generator
+    # can (sometimes?) forget to generate the Javascript targets.
+    # Add an apparently missing path to a derived headerdir and make explicit copies
+    # therein of headers that shouldn't be necessary...
+    patchfiles-append       patch-fix-jsc_jsch-include.diff
 
     # add dep for newer ruby and spec this for build
     # https://trac.macports.org/ticket/52016
-    depends_build-append    port:ruby25
-    configure.args-append   -DRUBY_EXECUTABLE=${prefix}/bin/ruby2.5
+    set rubydepend          port:ruby25
+    set rubyexec            ${prefix}/bin/ruby2.5
+    foreach r {2.7 2.6 2.5 2.4 2.3} {
+        if {[file exists ${prefix}/bin/ruby${r}]} {
+            set rubydepend  port:ruby[string map {. {}} ${r}]
+            set rubyexec    ${prefix}/bin/ruby${r}
+            break
+        }
+    }
+    depends_build-append    ${rubydepend}
+    configure.args-append   -DRUBY_EXECUTABLE=${rubyexec}
 
     # fix missing PRId64 definitions on systems
     # that don't define __STDC_FORMAT_MACROS by default
@@ -259,14 +381,60 @@ if {${os.platform} eq "darwin" && ${os.major} <= 16} {
         configure.cxxflags-append -D_GLIBCXX_USE_C99_MATH_TR1=1
         configure.cxxflags-append -include ${filespath}/snowmath.h
     }
+
+    # companion code to patch-mactypes.diff :
+    post-configure {
+# TODO: check if the path exists directly after the configure step or else what other potentially appropriate paths do exist.
+        xinstall -m 644 ${filespath}/MacTypes.h ${build.dir}/JavaScriptCore/Headers/JavaScriptCore/
+    }
+    post-destroot {
+        xinstall -m 644 ${filespath}/MacTypes.h ${destroot}${prefix}/include/webkitgtk-4.0/JavaScriptCore/
+    }
 }
 
-notes-append "
-If you are porting new software to use webkit2gtk on Apple systems,\
-you will likely need to define BUILDING_GTK__ to get the correct\
-behaviour from WebKitAvailability.h.
-"
+# RJVB
+patchfiles-append   patch-DateInstance-nullptr-deref.diff \
+                    patch-IPC-failure-message.diff \
+                    patch-cmake-summary.diff \
+                    patch-cmake-no-colours.diff \
+                    patch-less-gcrypt-oops-msg.diff
+
+# for some reason the JavaScriptCore libspec isn't defined when building the MiniBrowser
+# catch and rectify:
+patchfiles-append   patch-minibrowser-jsc.diff
+if {${subport} eq "${name}"} {
+    set wkAPIVersion    4.0
+} else {
+    set wkAPIVersion    4.1
+}
+if {${os.platform} eq "darwin"} {
+    post-patch {
+        reinplace "s|@API@|${wkAPIVersion}|g" ${worksrcpath}/Tools/MiniBrowser/gtk/CMakeLists.txt
+        reinplace "s|@SHEXT@|dylib|g" ${worksrcpath}/Tools/MiniBrowser/gtk/CMakeLists.txt
+    }
+    post-destroot {
+        if {[variant_isset minibrowser]} {
+            system "install_name_tool -change @rpath/libjavascriptcoregtk-4.0.18.dylib \
+                ${prefix}/lib/libjavascriptcoregtk-4.0.18.dylib ${destroot}${prefix}/libexec/webkit2gtk-4.0/MiniBrowser"
+        }
+    }
+
+    notes-append "
+    If you are porting new software to use webkit2gtk on Apple systems,\
+    you will likely need to define BUILDING_GTK__ to get the correct\
+    behaviour from WebKitAvailability.h.
+    "
+} else {
+    patchfiles-append \
+                    prefer-pthread.patch \
+                    patch-reduce-mem-overheads-linux.diff \
+                    file-linux-madv_free.diff
+    post-patch {
+        reinplace "s|@API@|${wkAPIVersion}|g" ${worksrcpath}/Tools/MiniBrowser/gtk/CMakeLists.txt
+        reinplace "s|@SHEXT@|so|g" ${worksrcpath}/Tools/MiniBrowser/gtk/CMakeLists.txt
+    }
+}
 
 livecheck.type      regex
 livecheck.url       http://webkitgtk.org/releases/
-livecheck.regex     "${my_name}-(\\d+\\.\\d*\[02468\](?:\\.\\d+)*)"
+livecheck.regex     "${upstream_name}-(\\d+\\.\\d*\[02468\](?:\\.\\d+)*)"
