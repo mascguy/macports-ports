@@ -146,37 +146,52 @@ foreach pyver ${python_versions} {
 
     # Get python branch
     set python_branch  "[string index ${pyver} 0].[string range ${pyver} 1 end]"
-    set python_major_ver "[string index ${pyver} 0]"
 
     variant python${pyver} conflicts {*}${other_python_versions} description "Add Python ${python_branch} support" "
-            depends_lib-append  port:python${pyver}
-            configure.args-delete \
+        py_setup ${python_branch}
+    "
+}
+
+proc py_setup {py_ver} {
+    global name version env prefix destroot frameworks_dir site_pack_dir workpath worksrcpath
+    set py_ver_nodot [string map {. {}} ${py_ver}]
+    set py_ver_major [string index ${py_ver} 0]
+
+    set python_frameworks_dir \
+                ${frameworks_dir}/Python.framework/Versions/${py_ver}
+    set python_frameworks_dir_relative \
+                [fileutil::relative ${prefix} ${python_frameworks_dir}]
+
+    depends_lib-append \
+                port:python${py_ver_nodot}
+
+    configure.args-delete \
                 -DVTK_WRAP_PYTHON:BOOL=OFF
 
-            configure.args-append \
+    configure.args-append \
                 -DVTK_WRAP_PYTHON:BOOL=ON \
-                -DPython${python_major_ver}_EXECUTABLE:STRING=${prefix}/bin/python${python_branch} \
-                -DPython${python_major_ver}_INCLUDE_DIR=${frameworks_dir}/Python.framework/Versions/${python_branch}/Headers/ \
-                -DPython${python_major_ver}_LIBRARY=${frameworks_dir}/Python.framework/Versions/${python_branch}/lib/libpython${python_branch}.dylib \
-                -DVTK_PYTHON_SITE_PACKAGES_SUFFIX=Library/Frameworks/Python.framework/Versions/${python_branch}/lib/python${python_branch}/site-packages \
+                -DPython${py_ver_major}_EXECUTABLE:STRING=${prefix}/bin/python${py_ver} \
+                -DPython${py_ver_major}_INCLUDE_DIR=${python_frameworks_dir}/Headers/ \
+                -DPython${py_ver_major}_LIBRARY=${python_frameworks_dir}/lib/libpython${py_ver}.dylib \
+                -DVTK_PYTHON_SITE_PACKAGES_SUFFIX=${python_frameworks_dir_relative}/lib/python${py_ver}/site-packages
 
-            if {[mpi_variant_isset]} {
-                depends_lib-append port:py${pyver}-mpi4py
-                configure.args-append \
-                    -DVTK_USE_SYSTEM_MPI4PY:BOOL=ON
-            }
+    if {[mpi_variant_isset]} {
+        depends_lib-append \
+                port:py${py_ver_nodot}-mpi4py
+        configure.args-append \
+                -DVTK_USE_SYSTEM_MPI4PY:BOOL=ON
+    }
 
-            post-destroot {
-                # generate setup.py and other necessary files to create .dist-info folder
-                system -W ${workpath}/build \"cmake -DVTK_WHEEL_BUILD:BOOL=ON -DVTK_VERSION_SUFFIX= ${worksrcpath}\"
-                set site_pack_dir Library/Frameworks/Python.framework/Versions/${python_branch}/lib/python${python_branch}/site-packages
-                delete -force ${workpath}/build/vtkmodules
-                copy ${workpath}/build/\${site_pack_dir}/vtkmodules ${workpath}/build
-                # create the .dist-info folder and contents
-                system -W ${workpath}/build \"${prefix}/bin/python${python_branch} setup.py dist_info\"
-                copy ${workpath}/build/${name}-${version}.dist-info ${destroot}${prefix}/\${site_pack_dir}
-            }
-    "
+    post-destroot {
+        # generate setup.py and other necessary files to create .dist-info folder
+        system -W ${workpath}/build "cmake -DVTK_WHEEL_BUILD:BOOL=ON -DVTK_VERSION_SUFFIX= ${worksrcpath}"
+        set site_pack_dir "Library/Frameworks/Python.framework/Versions/${py_ver}/lib/python${py_ver}/site-packages"
+        delete -force ${workpath}/build/vtkmodules
+        copy ${workpath}/build/${site_pack_dir}/vtkmodules ${workpath}/build
+        # create the .dist-info folder and contents
+        system -W ${workpath}/build "${prefix}/bin/python${python_branch} setup.py dist_info"
+        copy ${workpath}/build/${name}-${version}.dist-info ${destroot}${prefix}/${site_pack_dir}
+    }
 }
 
 variant xdmf description {Add XDMF readers} {
