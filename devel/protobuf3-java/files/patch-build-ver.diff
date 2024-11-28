@@ -1,0 +1,33 @@
+--- BUILD.orig	2023-07-01 09:46:52.000000000 -0400
++++ BUILD	2023-07-01 09:49:22.000000000 -0400
+@@ -613,7 +613,7 @@
+     ]) + [
+         ":gen_well_known_protos_java",
+     ],
+-    javacopts = ["-source 6", "-target 6"],
++    javacopts = ["-source 7", "-target 7"],
+     visibility = ["//visibility:public"],
+ )
+ 
+@@ -622,7 +622,7 @@
+     srcs = glob([
+         "java/util/src/main/java/com/google/protobuf/util/*.java",
+     ]),
+-    javacopts = ["-source 6", "-target 6"],
++    javacopts = ["-source 7", "-target 7"],
+     visibility = ["//visibility:public"],
+     deps = [
+         "protobuf_java",
+--- java/pom.xml.orig	2023-07-01 10:14:12.000000000 -0400
++++ java/pom.xml	2023-07-01 10:14:34.000000000 -0400
+@@ -96,8 +96,8 @@
+           <artifactId>maven-compiler-plugin</artifactId>
+           <version>3.6.0</version>
+           <configuration>
+-            <source>1.6</source>
+-            <target>1.6</target>
++            <source>1.7</source>
++            <target>1.7</target>
+           </configuration>
+         </plugin>
+         <plugin>
