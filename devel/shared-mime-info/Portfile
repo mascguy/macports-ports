@@ -10,7 +10,10 @@ set ver_latest      yes
 platform darwin {
     # Version 2.2 is last version not requiring std::filesystem
     # Fallback to it, for 10.5 and earlier
-    if { ${os.major} >= 10 } {
+    set macos_ver ${macosx_deployment_target}
+    ui_info "macos_ver: ${macos_ver}"
+
+    if { [vercmp ${macos_ver} 10.14] <= 0 } {
         PortGroup   legacysupport 1.1
 
         # Needed for std::filesystem
