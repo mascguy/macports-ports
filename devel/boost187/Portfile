@@ -9,6 +9,9 @@ PortGroup       active_variants 1.1
 # Needed for: TARGET_OS_IOS, dirfd
 legacysupport.newest_darwin_requires_legacy 14
 
+# Don't set flags for configure phase, as not needed for b2 build
+legacysupport.phases-delete configure
+
 version         1.87.0
 
 set branch      [join [lrange [split ${version} .] 0 1] .]
