@@ -38,6 +38,9 @@ default legacysupport.use_mp_libcxx     no
 options legacysupport.disable_function_wrap
 default legacysupport.disable_function_wrap no
 
+options legacysupport.phases
+default legacysupport.phases            { extract configure build destroot test }
+
 if {[info exists makefile.override]} {
     pre-configure {
         ui_error "The legacysupport PG must be included *before* the makefile PG"
@@ -117,13 +120,13 @@ proc legacysupport::add_once { opt where value } {
 }
 
 proc legacysupport::set_phase_env_var { var } {
-    foreach phase { extract configure build destroot test } {
+    foreach phase [option legacysupport.phases] {
         legacysupport::add_once ${phase}.env append ${var}
     }
 }
 
 proc legacysupport::remove_phase_env_var { var } {
-    foreach phase { extract configure build destroot test } {
+    foreach phase [option legacysupport.phases] {
         ${phase}.env-delete ${var}
     }
 }
@@ -229,6 +232,7 @@ proc legacysupport::legacysupport_proc {option action args} {
 option_proc legacysupport.newest_darwin_requires_legacy legacysupport::legacysupport_proc
 option_proc legacysupport.legacysupport.use_mp_libcxx   legacysupport::legacysupport_proc
 option_proc legacysupport.legacysupport.use_static      legacysupport::legacysupport_proc
+option_proc legacysupport.phases                        legacysupport::legacysupport_proc
 
 # see https://trac.macports.org/ticket/59832
 post-destroot {
