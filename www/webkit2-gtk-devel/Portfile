@@ -7,41 +7,14 @@
 PortSystem          1.0
 PortGroup           active_variants 1.1
 PortGroup           cmake 1.1
-platform darwin {
-    PortGroup       legacysupport 1.1
-    PortGroup       compiler_blacklist_versions 1.0
 
-    # clang-12 is the 1st version I have installed that compiles FileSystem.cpp (using std::filesystem) correctly
-    compiler.blacklist {clang < 602} {macports-clang-3.[0-9]} {macports-clang-[4-9].0} {macports-clang-1[0-1]}
-}
-
-compiler.cxx_standard 2020
-
-platform darwin {
-    # Fix compilation for Angle subproject: platform.h: error: 'TARGET_OS_OSX' is not defined
-    legacysupport.newest_darwin_requires_legacy 15
-}
-cmake.generator     Ninja
-build.pre_args-prepend -k 0
-
-# ensure pre-compiled headers and the possible use of ccache can co-exist
-configure.env-append \
-                    "CCACHE_SLOPPINESS=pch_defines,time_macros"
-build.env-append    "CCACHE_SLOPPINESS=pch_defines,time_macros"
-
-conflicts           webkit2-gtk
 name                webkit2-gtk-devel
-set upstream_name   webkitgtk
+conflicts           webkit2-gtk
+set my_name         webkitgtk
 version             2.40.1
+revision            0
 
 description         Apple's WebKit2 HTML rendering library for GTK+3,
-if {${subport} eq "${name}"} {
-    description-append \
-                    API=webkit2gtk-4.0
-} else {
-    description-append \
-                    API=webkit2gtk-4.1
-}
 long_description    ${description}
 maintainers         {devans @dbevans} {kencu @kencu}
 categories          www gnome
@@ -50,8 +23,38 @@ license             LGPL-2+ BSD
 homepage            http://webkitgtk.org/
 master_sites        http://webkitgtk.org/releases/
 
+if {${subport} eq "${name}"} {
+    description-append \
+                    API=webkit2gtk-4.0
+} else {
+    description-append \
+                    API=webkit2gtk-4.1
+}
+
+platform darwin {
+    PortGroup       legacysupport 1.1
+    PortGroup       compiler_blacklist_versions 1.0
+
+    # Fix compilation for Angle subproject: platform.h: error: 'TARGET_OS_OSX' is not defined
+    legacysupport.newest_darwin_requires_legacy 15
+
+    # clang-12 is the 1st version I have installed that compiles FileSystem.cpp (using std::filesystem) correctly
+    compiler.blacklist {clang < 602} {macports-clang-3.[0-9]} {macports-clang-[4-9].0} {macports-clang-1[0-1]}
+}
+
+compiler.cxx_standard 2020
+
+cmake.generator     Ninja
+build.pre_args-prepend -k 0
+
+# ensure pre-compiled headers and the possible use of ccache can co-exist
+foreach p {configure build} {
+    ${p}.env-append \
+                    "CCACHE_SLOPPINESS=pch_defines,time_macros"
+}
+
 use_xz              yes
-distname            ${upstream_name}-${version}
+distname            ${my_name}-${version}
 
 dist_subdir         webkit-gtk
 
@@ -66,7 +69,8 @@ depends_build-append \
                     port:python27 \
                     port:unifdef
 
-depends_lib-append  port:atk \
+depends_lib-append \
+                    port:atk \
                     port:bison \
                     path:lib/pkgconfig/cairo.pc:cairo \
                     port:flex \
@@ -90,21 +94,20 @@ depends_lib-append  port:atk \
                     port:webp \
                     port:woff2 \
                     port:zlib
+
 platform darwin {
     # doc generation should frankly be a variant because how Joe Users consult the stuff?
     depends_build-append \
                     port:gtk-doc \
                     port:py27-simplejson
 
-#                     port:gstreamer1-gst-plugins-bad
     depends_lib-append \
                     port:at-spi2-atk \
+                    port:enchant2 \
                     port:fontconfig \
                     port:geoclue2 \
-                    port:enchant2 \
                     port:hyphen
 }
-
 
 # 1. add missing JavaScriptCore include directory used only on Apple webkit builds
 # 2. don't copy the ICU includes into the source tree
@@ -151,7 +154,7 @@ platform darwin {
 
 # Fix build with Ruby 3.2+
 # https://github.com/WebKit/WebKit/commit/b7ac5d0ccc7ca3ed6bf4f2d40fde60247ce87d3c
-patchfiles-append    patch-deprecated-file-exists-rb32.diff
+#patchfiles-append    patch-deprecated-file-exists-rb32.diff
 
 # Reduce compilation warnings
 configure.cppflags-append \
@@ -234,7 +237,7 @@ variant x11 conflicts quartz {
         -DENABLE_OPENGL=ON
     platform darwin {
         configure.args-append \
-            -DUSE_GBM=OFF 
+            -DUSE_GBM=OFF
     }
 
     depends_lib-append \
@@ -437,4 +440,4 @@ if {${os.platform} eq "darwin"} {
 
 livecheck.type      regex
 livecheck.url       http://webkitgtk.org/releases/
-livecheck.regex     "${upstream_name}-(\\d+\\.\\d*\[02468\](?:\\.\\d+)*)"
+livecheck.regex     "${my_name}-(\\d+\\.\\d*\[02468\](?:\\.\\d+)*)"
