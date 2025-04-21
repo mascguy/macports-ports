@@ -86,15 +86,21 @@ if {${name} ne ${subport}} {
             set pc_src_file "${worksrcpath}/pygobject-3.0.pc.in"
             set pc_dest_dir "${destroot}${python.prefix}/lib/pkgconfig"
             set pc_dest_file "${pc_dest_dir}/pygobject-3.0.pc"
+            set pc_reinplace_list \
+                [list \
+                    "s|@prefix@|${python.prefix}|" \
+                    "s|@exec_prefix@|${python.prefix}|" \
+                    "s|@includedir@|${python.include}/pygobject|" \
+                    "s|@datadir@|\${prefix}/share|" \
+                    "s|@datarootdir@|\${prefix}/share|" \
+                    "s|@VERSION@|${version}|" \
+                ]
 
             xinstall -d "${pc_dest_dir}"
             copy "${pc_src_file}" "${pc_dest_file}"
-            reinplace "s|@prefix@|${python.prefix}|" ${pc_dest_file}
-            reinplace "s|@exec_prefix@|${python.prefix}|" ${pc_dest_file}
-            reinplace "s|@includedir@|${python.include}/pygobject|" ${pc_dest_file}
-            reinplace "s|@datadir@|\${prefix}/share|" ${pc_dest_file}
-            reinplace "s|@datarootdir@|\${prefix}/share|" ${pc_dest_file}
-            reinplace "s|@VERSION@|${version}|" ${pc_dest_file}
+            foreach pc_pat ${pc_reinplace_list} {
+                reinplace "${pc_pat}" "${pc_dest_file}"
+            }
         }
     }
 
