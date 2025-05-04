@@ -10,8 +10,8 @@ PortGroup           perl5 1.0
 name                gimp3-devel
 set my_name         gimp3
 conflicts           gimp2 gimp2-devel
-version             2.99.rc1
-revision            1
+version             3.0.2
+revision            0
 license             GPL-3+
 categories          graphics
 maintainers         {devans @dbevans} {mascguy @mascguy}
@@ -26,23 +26,20 @@ long_description    The GNU Image Manipulation Program (GIMP) is a powerful \
                     git master.
 homepage            https://gimp.org/
 
-# TODO: Once 3.0 officially released, eliminate these versions hacks
-set branch          3.0
-#set branch          [join [lrange [split ${version} .] 0 1] .]
+set branch          [join [lrange [split ${version} .] 0 1] .]
 master_sites        gimp:gimp/v${branch}/
 dist_subdir         ${my_name}
-distname            gimp-3.0.0-RC1
+distname            gimp-${version}
 use_xz              yes
 
-checksums           rmd160  18f197f32e38304dba69b2d5af62534174892852 \
-                    sha256  b3d0b264c5e38e789faaf3417003397f3240014c59c7f417f9ca3bd39c5ffb66 \
-                    size    28863948
+checksums           rmd160  db09fecb1251674a5ade556b17faffc00a50511e \
+                    sha256  546ddc30cb2d0e79123c7fcb4d78211e1ee7a6aace91a6a0ad8cbcbf6ea571a2 \
+                    size    27019468
 
 # Disable unexpected download of subprojects
 meson.wrap_mode     nodownload
 
 depends_build-append \
-                    port:appstream-glib \
                     port:gettext \
                     port:gtk-doc \
                     port:perl${perl5.major} \
@@ -51,6 +48,7 @@ depends_build-append \
 
 depends_lib-append \
                     port:aalib \
+                    port:appstream-glib \
                     port:atk \
                     path:lib/pkgconfig/babl-0.1.pc:babl \
                     port:bzip2 \
@@ -67,7 +65,9 @@ depends_lib-append \
                     port:glib-networking \
                     path:lib/pkgconfig/gobject-introspection-1.0.pc:gobject-introspection \
                     path:lib/pkgconfig/gtk+-3.0.pc:gtk3 \
+                    path:lib/pkgconfig/harfbuzz.pc:harfbuzz \
                     port:iso-codes \
+                    port:json-glib \
                     port:lcms2 \
                     port:libheif \
                     path:include/turbojpeg.h:libjpeg-turbo \
@@ -82,10 +82,15 @@ depends_lib-append \
                     port:mypaint-brushes1 \
                     port:openexr \
                     port:openjpeg \
+                    path:lib/pkgconfig/pango.pc:pango \
                     path:lib/pkgconfig/poppler.pc:poppler \
+                    port:shared-mime-info \
                     port:tiff \
+                    path:bin/vala:vala \
                     port:webp \
                     port:xdg-utils \
+                    port:xpm \
+                    port:xz \
                     port:zlib
 
 depends_run-append \
@@ -140,18 +145,24 @@ if {[vercmp $xcodeversion 4.3] < 0 && [string match "*macports*" ${configure.com
 
 configure.args-append \
                     -Dalsa=disabled \
-                    -Denable-console-bin=true \
                     -Dbug-report-url=https://guide.macports.org/#project.tickets \
+                    -Denable-console-bin=true \
                     -Dgi-docgen=disabled \
-                    -Dg-ir-doc=false \
                     -Dgudev=disabled \
+                    -Dheif=enabled \
+                    -Djpeg2000=enabled \
+                    -Djpeg-xl=enabled \
+                    -Dheif=enabled \
                     -Dilbm=disabled \
                     -Djavascript=disabled \
                     -Dlibbacktrace=false \
                     -Dlibunwind=false \
                     -Dlua=false \
+                    -Dmng=enabled \
+                    -Dopenexr=enabled \
                     -Dopenmp=disabled \
-                    -Dwebkit-unmaintained=false
+                    -Dwebkit-unmaintained=false \
+                    -Dwebp=enabled
 
 # keep empty GIMP font directory
 # silences warning message on startup:
@@ -187,27 +198,32 @@ proc py_setup {py_ver} {
                     port:py${py_ver_nodot}-gobject3
 }
 
-variant python39 description {Build with python plugin support using python 3.9} {
+variant python39 conflicts python310 python311 python312 python313 description {Build with python plugin support using python 3.9} {
     py_setup 3.9
 }
 
-variant python310 description {Build with python plugin support using python 3.10} {
+variant python310 conflicts python39 python311 python312 python313 description {Build with python plugin support using python 3.10} {
     py_setup 3.10
 }
 
-variant python311 description {Build with python plugin support using python 3.11} {
+variant python311 conflicts python39 python310 python312 python313 description {Build with python plugin support using python 3.11} {
     py_setup 3.11
 }
 
-variant python312 description {Build with python plugin support using python 3.12} {
+variant python312 conflicts python39 python310 python311 python313 description {Build with python plugin support using python 3.12} {
     py_setup 3.12
+}
+
+variant python313 conflicts python39 python310 python311 python312 description {Build with python plugin support using python 3.13} {
+    py_setup 3.13
 }
 
 if {![variant_isset python39] && \
     ![variant_isset python310] && \
     ![variant_isset python311] && \
-    ![variant_isset python312]} {
-    default_variants-append +python312
+    ![variant_isset python312] && \
+    ![variant_isset python313]} {
+    default_variants-append +python313
 }
 
 # meson.build uses the GTK+ 3 backend to determine whether to enable X11.
@@ -218,8 +234,7 @@ variant x11 conflicts quartz {
                     port:xorg-libXcursor \
                     port:xorg-libXmu \
                     port:xorg-libXext \
-                    port:xorg-libXfixes \
-                    port:xpm
+                    port:xorg-libXfixes
 }
 
 variant quartz conflicts x11 {
@@ -238,4 +253,6 @@ post-activate {
     system "${prefix}/bin/update-desktop-database ${prefix}/share/applications"
 }
 
-livecheck.type      none
+livecheck.type      regex
+livecheck.url       https://download.gimp.org/mirror/pub/gimp/v${branch}/
+livecheck.regex     "gimp-(${branch}(?:\\.\\d+)*)${extract.suffix}"
