@@ -14,13 +14,13 @@ PortGroup                   muniversal 1.0
 name                        glib2-devel
 conflicts                   glib2
 set my_name                 glib
-version                     2.78.4
-revision                    2
+version                     2.84.1
+revision                    0
 epoch                       1
 
-checksums                   rmd160  7941be85af18c428d86f4a00e52f41542b061aa9 \
-                            sha256  24b8e0672dca120cc32d394bccb85844e732e04fe75d18bb0573b2dbc7548f63 \
-                            size    5331892
+checksums                   rmd160  c2f04eb4512dd79691f61ec561aa70efdf9aa7a1 \
+                            sha256  2b4bc2ec49611a5fc35f86aca855f2ed0196e69e53092bab6bb73396bf30789a \
+                            size    5615396
 
 set branch                  [join [lrange [split ${version} .] 0 1] .]
 categories                  devel
@@ -48,18 +48,18 @@ legacysupport.newest_darwin_requires_legacy 15
 patchfiles-append           libintl.patch
 patchfiles-append           patch-gio-tests-meson.build.diff
 patchfiles-append           patch-glib_gmem.c.diff
-patchfiles-append           patch-glib_gspawn.c.diff
+#patchfiles-append           patch-glib_gspawn.c.diff
 patchfiles-append           patch-glib_gunicollate.c.diff
 patchfiles-append           patch-gio_xdgmime_xdgmime.c.diff
 patchfiles-append           patch-get-launchd-dbus-session-address.diff
-patchfiles-append           patch-gmodule-gmodule-dl.c.diff
-patchfiles-append           patch-meson_build-meson_options-appinfo.diff
-patchfiles-append           patch-meson-build-python-path.diff
+#patchfiles-append           patch-gmodule-gmodule-dl.c.diff
+#patchfiles-append           patch-meson_build-meson_options-appinfo.diff
+#patchfiles-append           patch-meson-build-python-path.diff
 patchfiles-append           patch-meson_build-atomic-test-older-clang-versions.diff
 patchfiles-append           universal.patch
 patchfiles-append           patch-glib2-findfolders-before-SL.diff
 patchfiles-append           patch-declarations.diff
-patchfiles-append           no-distutils.patch
+#patchfiles-append           no-distutils.patch
 
 platform darwin {
     if {${os.major} < 11} {
@@ -75,14 +75,16 @@ platform darwin {
     }
 }
 
-depends_build-append        port:gettext \
+depends_build-append \
+                            port:gettext \
                             bin:xmllint:libxml2 \
                             path:bin/pkg-config:pkgconfig
 
 set py_ver                  3.13
 set py_ver_nodot            [string map {. {}} ${py_ver}]
 
-depends_lib-append          port:gettext-runtime \
+depends_lib-append \
+                            port:gettext-runtime \
                             port:libelf \
                             port:libffi \
                             port:libiconv \
@@ -208,24 +210,24 @@ post-destroot {
 }
 
 platform darwin {
-    configure.args-append   -Ddtrace=false
+    configure.args-append   -Ddtrace=disabled
     
     # some tests fail to build on 10.6.8 Rosetta: https://trac.macports.org/ticket/65517
     if {${os.major} == 10 && ${build_arch} eq "ppc"} {
         configure.args-append   -Dtests=false
     }
-}
 
-platform darwin 8 {
-    # https://trac.macports.org/ticket/67307
-    configure.cflags-append -D__DARWIN_NON_CANCELABLE=1
+    if {${os.major} == 8} {
+        # https://trac.macports.org/ticket/67307
+        configure.cflags-append -D__DARWIN_NON_CANCELABLE=1
 
-    # the @loader_path linkages in the test binaries can't find the dylibs
-    configure.args-append   -Dtests=false
+        # the @loader_path linkages in the test binaries can't find the dylibs
+        configure.args-append   -Dtests=false
 
-    # meson on Tiger cannot use rpaths, so we workaround with this to find dylibs
-    foreach my_phase {build test destroot} {
-        ${my_phase}.env-append  "DYLD_LIBRARY_PATH=${build_dir}/glib:${build_dir}/gobject:${build_dir}/gio:${build_dir}/gthread:${build_dir}/gmodule"
+        # meson on Tiger cannot use rpaths, so we workaround with this to find dylibs
+        foreach my_phase {build test destroot} {
+            ${my_phase}.env-append  "DYLD_LIBRARY_PATH=${build_dir}/glib:${build_dir}/gobject:${build_dir}/gio:${build_dir}/gthread:${build_dir}/gmodule"
+        }
     }
 }
 
