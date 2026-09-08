@@ -9,7 +9,7 @@ PortGroup           legacysupport 1.1
 # Used to provide wrappers, see below.
 legacysupport.newest_darwin_requires_legacy 0
 
-github.setup        Beep6581 RawTherapee 5.11
+github.setup        Beep6581 RawTherapee 5.13
 github.tarball_from releases
 name                rawtherapee
 revision            0
@@ -28,9 +28,9 @@ long_description    ${github.project} is a powerful, cross-platform \
 
 use_xz              yes
 distname            ${name}-${github.version}
-checksums           rmd160  98ce3b2e1c4c7d2b533a78bd07895c20fa13b6ab \
-                    sha256  e584c18dec112de29954b2b6471449a302a85e5cca4e42ede75fa333a36de724 \
-                    size    18005652
+checksums           rmd160  62eea71fd9a7bc922b7aa505ef9560eee2f0122c \
+                    sha256  23bdff4b1817e1274c11a94b11d21cac59e9c1b1d209795d3194710ee73e77bf \
+                    size    19063124
 
 compiler.cxx_standard   2011
 compiler.openmp_version 3.1
@@ -60,8 +60,8 @@ depends_lib-append      port:adwaita-icon-theme \
                         port:tiff \
                         port:zlib
 
-patchfiles-append       no-modified-project_source_dir.diff \
-                        patch-config_h_in.diff
+#patchfiles-append       no-modified-project_source_dir.diff
+patchfiles-append       patch-config_h_in.diff
 
 pre-configure {
     if {![variant_isset quartz] && ![variant_isset x11]} {
@@ -137,9 +137,9 @@ variant x11 conflicts quartz {
     require_active_variants gtk3    x11
     require_active_variants gtkmm3  x11
 
-    patchfiles-append   0001-Do-not-force-Cocoa-build.patch \
-                        0002-Allow-non-Cocoa-code-in-sources.patch \
-                        0003-patch-options.cc.diff
+    patchfiles-append   0001-Do-not-force-Cocoa-build.patch
+    patchfiles-append   0002-Allow-non-Cocoa-code-in-sources.patch
+    patchfiles-append   0003-patch-options.cc.diff
 
     post-patch {
         reinplace "s|@PREFIX@|${prefix}|" ${worksrcpath}/rtgui/options.cc
