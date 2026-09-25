@@ -16,7 +16,7 @@ revision            1
 
 categories          graphics
 license             GPL-3
-maintainers         @jasonliu-- openmaintainer
+maintainers         @jasonliu-- {mascguy @mascguy} openmaintainer
 
 homepage            https://www.${name}.com
 description         raw photo processing program
