@@ -4,8 +4,8 @@ PortSystem          1.0
 PortGroup           meson 1.0
 
 name                gexiv2
-version             0.14.7
-revision            1
+version             0.16.2
+revision            0
 
 categories          gnome graphics
 license             GPL-2+
@@ -22,26 +22,22 @@ set branch          [join [lrange [split ${version} .] 0 1] .]
 master_sites        gnome:sources/${name}/${branch}/
 use_xz              yes
 
-checksums           rmd160  2bf797f6a2102052662a6c0fefe596469e66931b \
-                    sha256  373b67b24f1a7b5c0606aaf0ea00b352f9511751e21deba0bac650bd5159c93d \
-                    size    391520
+checksums           rmd160  5618d7c58d08befa6f18146a0a5a2601c28604eb \
+                    sha256  aad9e240fdffbe85e390f46ee0a567e251baea5c29c3d8690260388683dc8d0a \
+                    size    434312
 
 # Disable unexpected download of subprojects
 meson.wrap_mode     nodownload
 
 set py_major        3
-set py_minor_min    10
+set py_minor_min    12
 set py_minor_max    14
 
 compiler.blacklist-append \
                     {clang < 900}
 
-# Needs Cxx14 as of v0.14.x
-compiler.cxx_standard 2014
-
-# Be sure to specify Cxx14, as Cxx17 compilation fails for v0.14.1
-configure.cxxflags-append \
-                    -std=c++14
+# Needs Cxx17 as of v0.16.x
+compiler.cxx_standard 2017
 
 if { [string match *clang* ${configure.compiler}] } {
     # Quiet warnings
@@ -52,9 +48,7 @@ if { [string match *clang* ${configure.compiler}] } {
 }
 
 depends_build-append \
-                    port:gi-docgen \
-                    port:gtk-doc \
-                    port:pkgconfig \
+                    path:bin/pkg-config:pkgconfig \
                     path:bin/vala:vala
 
 depends_lib-append \
@@ -65,7 +59,12 @@ depends_lib-append \
 license_noconflict  vala
 
 configure.args-append \
-                    -Dgtk_doc=true
+                    -Dgtk_doc=false \
+                    -Dintrospection=true \
+                    -Dpython3=true \
+                    -Dtests=false \
+                    -Dtools=true \
+                    -Dvapi=true
 
 proc py_ver_set {} {
     global py_major py_minor_min py_minor_max
@@ -83,11 +82,13 @@ proc py_ver_set {} {
     return ""
 }
 
-proc py_setup {p_py_ver} {
-    global py_ver py_ver_nodot
+proc py_setup {py_ver} {
+    global prefix
 
-    set py_ver       ${p_py_ver}
     set py_ver_nodot [string map {. {}} ${py_ver}]
+
+    configure.python \
+                    ${prefix}/bin/python${py_ver}
 
     patchfiles-append \
                     patch-python-bins.diff
@@ -95,22 +96,44 @@ proc py_setup {p_py_ver} {
     post-patch {
         reinplace "s|@@PYTHON3_BIN@@|${prefix}/bin/python${py_ver}|" \
                     meson.build
+
+        # Fix python shebangs
+        fs-traverse f ${worksrcpath} {
+            if {[string match *.py ${f}]} {
+                ui_info "patching python script: ${f}"
+                reinplace -q "s|/usr/bin/python3$|${configure.python}|" ${f}
+                reinplace -q "s|/usr/bin/env python2$|${configure.python}|" ${f}
+                reinplace -q "s|/usr/bin/env python3$|${configure.python}|" ${f}
+            }
+        }
     }
 
     depends_lib-append \
                     port:py${py_ver_nodot}-gobject3
 }
 
+variant docs description {Generate optional docs} {
+    depends_build-append \
+                    port:gi-docgen \
+                    port:gtk-doc
+
+    configure.args-replace \
+                    -Dgtk_doc=false \
+                    -Dgtk_doc=true
+
+#    post-destroot {
+#        xinstall -m 0755 -d ${destroot}${prefix}/share/doc/${name}
+#        xinstall -m 0644 -W ${build.dir} README \
+#            ${destroot}${prefix}/share/doc/${name}
+#    }
+}
+
 # TODO: Generate these dynamically, since we define min/max supported versions
-variant python310 conflicts python311 python312 python313 python314 \
-    description {Build Python3 bindings using Python 3.10} {}
-variant python311 conflicts python310 python312 python313 python314 \
-    description {Build Python3 bindings using Python 3.11} {}
-variant python312 conflicts python310 python311 python313 python314 \
+variant python312 conflicts python313 python314 \
     description {Build Python3 bindings using Python 3.12} {}
-variant python313 conflicts python310 python311 python312 python314 \
+variant python313 conflicts python312 python314 \
     description {Build Python3 bindings using Python 3.13} {}
-variant python314 conflicts python310 python311 python312 python313 \
+variant python314 conflicts python312 python313 \
     description {Build Python3 bindings using Python 3.14} {}
 
 if {[py_ver_set] eq ""} {
