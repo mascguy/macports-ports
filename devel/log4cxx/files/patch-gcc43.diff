@@ -1,0 +1,10 @@
+--- src/main/cpp/inputstreamreader.cpp.orig	2026-07-22 21:28:21.000000000 -0400
++++ src/main/cpp/inputstreamreader.cpp	2026-11-16 09:42:13.309036242 -0500
+@@ -21,6 +21,7 @@
+ #include <log4cxx/helpers/pool.h>
+ #include <log4cxx/helpers/bytebuffer.h>
+ #include <log4cxx/helpers/stringhelper.h>
++#include <string>
+ 
+ using namespace LOG4CXX_NS;
+ using namespace LOG4CXX_NS::helpers;
