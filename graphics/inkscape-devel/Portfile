@@ -43,7 +43,8 @@ set python_minor    14
 set python_version  ${python_major}${python_minor}
 
 # Upstream fixes for poppler; details in patch files
-patchfiles-append    poppler-26.01.0.patch
+patchfiles-append   poppler-26.01.0.patch
+patchfiles-append   patch-inkscape-1.4.4-poppler_fixes-3.diff
 
 # Fix for glibmm-2.4 < 2.64: Glib::canonicalize_filename not available
 patchfiles-append   glibmm-canonicalize.patch
